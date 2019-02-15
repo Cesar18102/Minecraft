@@ -1,0 +1,9 @@
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\bin\Debug\Minecraft.exe.config
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\obj\Debug\Minecraft.csprojResolveAssemblyReference.cache
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\bin\Debug\Minecraft.exe
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\bin\Debug\Minecraft.pdb
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\obj\Debug\Minecraft.exe
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\obj\Debug\Minecraft.pdb
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\bin\Debug\Tao.FreeGlut.dll
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\bin\Debug\Tao.OpenGl.dll
+C:\Users\olehk\Documents\Visual Studio 2012\Projects\Minecraft\Minecraft\bin\Debug\Tao.Platform.Windows.dll
