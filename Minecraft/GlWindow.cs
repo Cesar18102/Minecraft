@@ -74,7 +74,7 @@ namespace Minecraft {
             Glut.glutInitWindowSize(this.Width, this.Height);
             Glut.glutInitWindowPosition(this.PositionX, this.PositionY);
             Glut.glutCreateWindow(this.Name);
-
+            
             Glut.glutFullScreen();
 
             Gl.glEnable(Gl.GL_TEXTURE_2D);
@@ -117,12 +117,10 @@ namespace Minecraft {
             Gl.glLoadIdentity();
             UpdateCamera();
 
-            this.Render();
-
             Gl.glBegin(Gl.GL_LINES);
 
                 Gl.glColor3f(1, 0, 0); // X
-                Gl.glVertex3d(0, 0, 0);
+                Gl.glVertex3d(1, 0, 0);
                 Gl.glVertex3d(10, 0, 0);
 
                 Gl.glColor3f(0, 1, 0); // Y
@@ -134,6 +132,8 @@ namespace Minecraft {
                 Gl.glVertex3d(0, 0, 10);
 
             Gl.glEnd();
+
+            this.Render();
 
             Glut.glutSwapBuffers();
         }

@@ -13,10 +13,5 @@ namespace Minecraft {
 
 
         }
-
-        public override void Draw(Vector3D Center) {
-
-            throw new NotImplementedException();
-        }
     }
 }

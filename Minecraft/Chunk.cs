@@ -19,6 +19,8 @@ namespace Minecraft {
                                                               Constants.CHUNK_Y, 
                                                               Constants.CHUNK_Z];
 
+        private RenderChunk[] Render = new RenderChunk[Constants.CHUNK_Y];
+
         public BlockInstance this[UInt16 x, UInt16 y, UInt16 z] {
  
             get { return Blocks[x, y, z]; }
@@ -40,12 +42,24 @@ namespace Minecraft {
 
             Block B = ItemsSet.ITEMS[1] as Block;
 
-            for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
+            /*for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
                 for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
-                    for (UInt16 k = 0; k < Constants.CHUNK_Y; k++)
-                        Blocks[i, k, j] = new BlockInstance(B, i, k, j);
+                    for (UInt16 k = 0; k < Constants.CHUNK_Y; k++)*/
 
-            for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
+            for (UInt16 i = 0; i < Constants.CHUNK_Y; i++) {
+                for (int j = 0; j < 128; j++) {
+
+                    UInt16 X = (UInt16)Constants.R.Next(0, Constants.CHUNK_X);
+                    UInt16 Z = (UInt16)Constants.R.Next(0, Constants.CHUNK_Z);
+
+                    if (Blocks[X, i, Z] == null)
+                        Blocks[X, i, Z] = new BlockInstance(B, X, i, Z);
+                }
+
+                Render[i] = new RenderChunk(this, i);
+            }
+
+            /*for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
                 for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
                     for (UInt16 k = 0; k < Constants.CHUNK_Y; k++) {
 
@@ -55,32 +69,19 @@ namespace Minecraft {
                         Blocks[i, k, j].PlanesVisibility[4] = j == Constants.CHUNK_Z - 1 || Blocks[i, k, j + 1] == null; // BACK
                         Blocks[i, k, j].PlanesVisibility[0] = k == 0 || Blocks[i, k - 1, j] == null; // TOP
                         Blocks[i, k, j].PlanesVisibility[5] = k == Constants.CHUNK_Y - 1 || Blocks[i, k + 1, j] == null; // BOTTOM
-                    }
+                    }*/
             //genaration
         }
 
         public void Draw() {
 
-            Vector3D BlockSize = (ItemsSet.ITEMS[1] as Block).Size;
-
-            for (int i = 0; i < Constants.CHUNK_X; i++)
-                for (int j = 0; j < Constants.CHUNK_Z; j++)
-                    for (int k = 0; k < Constants.CHUNK_Y; k++)
-                        Blocks[i, k, j].Draw(new Vector3D((PivotX + 0.5f + i) * BlockSize.DX,
-                                                          (-k - 0.5f) * BlockSize.DY,
-                                                          (PivotZ + 0.5f + j) * BlockSize.DZ));
-                                                          
-            //draw segmentation
+            foreach (RenderChunk R in Render)
+                R.Draw();
         }
 
         public void WriteFile(Stream S) {
 
             //saving
         }
-
-        /*public bool PlayerInside() {
-
-            
-        }*/
     }
 }

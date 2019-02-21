@@ -21,12 +21,13 @@ namespace Minecraft {
 
         private Vector2D Mouse = null;
 
-        public void Start() {
+        public void Start()
+        {
 
             CAM = new Camera(0, 0.2f, 0, 1, 0, 1, 0, 1, 0);
 
             GLW = new GlWindow(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height,
-                               0, 0, "Minecraft", 60, InitGraphics, Render, Reshape, KeyDown, 
+                               0, 0, "Minecraft", 60, InitGraphics, Render, Reshape, KeyDown,
                                MouseClick, MouseMove, SpecialKeyDown, SpecialKeyUp, CAM);
 
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
@@ -34,8 +35,8 @@ namespace Minecraft {
 
             W = new World("Test");
 
-            for (int i = -0; i <= 0; i++)
-                for (int j = -0; j <= 0; j++) {
+            for (int i = 0; i <= 0; i++)
+                for (int j = -2; j <= 2; j++) {
 
                     Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * i), Convert.ToInt64(Constants.CHUNK_Z * j), true);
                     W.AddChunk(C);

@@ -14,7 +14,5 @@ namespace Minecraft {
         public string Description { get; protected set; }
 
         public UInt32 Stack { get; protected set; }
-
-        public abstract void Draw(Vector3D Center);
     }
 }

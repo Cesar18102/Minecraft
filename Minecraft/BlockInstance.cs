@@ -34,21 +34,22 @@ namespace Minecraft {
             for (int i = 0; i < B.Planes.Count; this.PlanesVisibility[i++] = true) ;
         }
 
-        public override void Draw(Vector3D Center) {
+        public void Draw(Int64 PivotX, Int64 PivotZ) {
 
             Gl.glPushMatrix();
 
-            Gl.glTranslatef(Center.DX, Center.DY, Center.DZ);
+            Gl.glTranslatef((PivotX + X + 0.5f) * Size.DX, (Constants.CHUNK_Y - Y - 0.5f) * Size.DY, (PivotZ + Z + 0.5f) * Size.DZ);
 
-            Gl.glColor4f(DefaultColor.R / 255f, DefaultColor.G / 255f, DefaultColor.B / 255f, DefaultColor.A / 255f);
-            TEXTURE.Bind();
+            //Gl.glColor4f(DefaultColor.R / 255f, DefaultColor.G / 255f, DefaultColor.B / 255f, DefaultColor.A / 255f);
 
             for (int i = 0; i < Planes.Count; i++) {
 
                 if (!PlanesVisibility[i])
                     continue;
 
-                Gl.glBegin((int)Planes[i].GlMode);
+                Planes[i].TEXTURE.Bind();
+
+                Gl.glBegin(/*(int)Planes[i].GlMode*/ Gl.GL_POLYGON);
 
                 for (int j = 0; j < Planes[i].PlanePointSquence.Count; j++) {
 

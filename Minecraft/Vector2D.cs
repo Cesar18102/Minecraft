@@ -11,6 +11,8 @@ namespace Minecraft {
         public float DX { get; private set; }
         public float DY { get; private set; }
 
+        public float Length { get { return (float)Math.Sqrt(DX * DX + DY * DY); } }
+
         public Vector2D(float dX, float dY) {
 
             this.DX = dX;

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Minecraft {
 
-    public class Vector3D {
+    public class Vector3D : IComparable {
 
         public float DX { get; private set; }
         public float DY { get; private set; }
         public float DZ { get; private set; }
 
-        public float Length { get { return (float)Math.Sqrt(DX * DX + DY * DY * DZ * DZ); } }
+        public float Length { get { return (float)Math.Sqrt(DX * DX + DY * DY + DZ * DZ); } }
 
         public Vector3D(float dX, float dY, float dZ) {
 
@@ -53,6 +53,35 @@ namespace Minecraft {
 
             float L = (float)Math.Sqrt(DX * DX + DY * DY + DZ * DZ);
             return new Vector3D(DX / L, DY / L, DZ / L);
+        }
+
+        public override bool Equals(object obj) {
+
+            if (!obj.GetType().Equals(typeof(Vector3D)))
+                return false;
+
+            Vector3D V3D = obj as Vector3D;
+
+            return V3D.DX == this.DX && V3D.DY == this.DY && V3D.DZ == this.DZ;
+        }
+
+        public int CompareTo(object obj) {
+
+            Vector3D V = obj as Vector3D;
+
+            if (V.DZ < this.DZ)
+                return 1;
+
+            if (V.DZ > this.DZ)
+                return -1;
+
+            if (V.DX < this.DX)
+                return -1;
+
+            if (V.DX > this.DX)
+                return 1;
+
+            return 0;
         }
     }
 }

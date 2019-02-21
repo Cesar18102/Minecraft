@@ -43,8 +43,6 @@ namespace Minecraft {
         public Color DefaultColor { get; private set; }
         public Color ShapeColor { get; private set; }
 
-        public Texture TEXTURE { get; private set; }
-
         public List<Plane> Planes = new List<Plane>();
 
         public List<Vector3D> ModelPoints = new List<Vector3D>();
@@ -73,7 +71,6 @@ namespace Minecraft {
             this.LowerConditions = B.LowerConditions;
             this.DefaultColor = B.DefaultColor;
             this.ShapeColor = B.ShapeColor;
-            this.TEXTURE = B.TEXTURE;
             this.ModelPoints = B.ModelPoints;
             this.TexturePoints = B.TexturePoints;
             this.Planes = B.Planes;
@@ -148,12 +145,6 @@ namespace Minecraft {
                                              ByteParser.ConvertBytes<byte>(ByteParser.GetBytes(BlockInfo, 1)),
                                              ByteParser.ConvertBytes<byte>(ByteParser.GetBytes(BlockInfo, 1)));
 
-            UInt16 TextureSrcLen = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(BlockInfo, 2));
-            string TextureSrc = ByteParser.ConvertBytes<string>(ByteParser.GetBytes(BlockInfo, TextureSrcLen));
-
-            this.TEXTURE = new Texture(Constants.DataDir + TextureSrc);
-            ItemsSet.TEXTURES.Add(TEXTURE);
-
             UInt16 ModelPointsCount = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(BlockInfo, 2));
 
             for (int i = 0; i < ModelPointsCount; i++)
@@ -192,11 +183,6 @@ namespace Minecraft {
             }
 
             return Conditions;
-        }
-
-        public override void Draw(Vector3D Center) {
-
-            throw new NotImplementedException();
         }
     }
 }

@@ -60,6 +60,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GlWindow.cs" />
+    <Compile Include="IntPair.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ItemCategory.cs" />
     <Compile Include="ItemsSet.cs" />
@@ -69,6 +70,8 @@
     <Compile Include="Plane.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RenderChunk.cs" />
+    <Compile Include="RenderPiece.cs" />
     <Compile Include="Texture.cs" />
     <Compile Include="Tool.cs" />
     <Compile Include="Vector2D.cs" />
