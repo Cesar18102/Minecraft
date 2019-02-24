@@ -17,12 +17,14 @@ namespace Minecraft {
         public static GlWindow GLW;
         public static Camera CAM;
         public static World W;
-        public static bool SHIFT = false;
-
         private Vector2D Mouse = null;
 
-        public void Start()
-        {
+        public static bool SHIFT = false;
+
+        public delegate void LoadingLog(string message, int layer);
+        public event LoadingLog LoadingLogging;
+
+        public void Start() {
 
             CAM = new Camera(0, 0.2f, 0, 1, 0, 1, 0, 1, 0);
 
@@ -33,12 +35,20 @@ namespace Minecraft {
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
             Mouse = new Vector2D(GLW.Width / 2, GLW.Height / 2);
 
+            LoadingLogging("Loading World", 0);
+
             W = new World("Test");
 
-            for (int i = 0; i <= 0; i++)
-                for (int j = -2; j <= 2; j++) {
+            int Width = 15;
+            int Height = 11;
+
+            for (int i = -Width / 2; i <= Width / 2; i++)
+                for (int j = -Height / 2; j <= Height / 2; j++) {
+
+                    LoadingLogging("Generating chunk " + ((i + Width / 2) * Height + j + Height / 2 + 1).ToString() + "/" + Width * Height, 0);
 
                     Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * i), Convert.ToInt64(Constants.CHUNK_Z * j), true);
+                    C.CreateTextures();
                     W.AddChunk(C);
                 }
 

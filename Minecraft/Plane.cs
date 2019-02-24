@@ -15,7 +15,7 @@ namespace Minecraft {
         public UInt32 GlMode { get; private set; }
 
         public string Texture_src { get; private set; }
-        public Texture TEXTURE { get; private set; }
+        public int TEX_ID { get; private set; }
 
         public List<UInt16> PlanePointSquence = new List<UInt16>();
         public List<UInt16> TexturePointsSequense = new List<UInt16>();
@@ -27,8 +27,7 @@ namespace Minecraft {
             UInt16 TextureSrcLen = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(S, 2));
             string TextureSrc = ByteParser.ConvertBytes<string>(ByteParser.GetBytes(S, TextureSrcLen));
 
-            this.TEXTURE = new Texture(Constants.DataDir + TextureSrc);
-            ItemsSet.TEXTURES.Add(TEXTURE);
+            this.TEX_ID = ItemsSet.Add(new Texture(Constants.DataDir + TextureSrc, false, true));
 
             UInt16 PlanePointsSequnceCount = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(S, 2));
 

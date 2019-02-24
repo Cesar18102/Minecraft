@@ -42,35 +42,32 @@ namespace Minecraft {
 
             Block B = ItemsSet.ITEMS[1] as Block;
 
-            /*for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
-                for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
-                    for (UInt16 k = 0; k < Constants.CHUNK_Y; k++)*/
+            for (UInt16 k = 0; k < Constants.CHUNK_Y; k++) {
+                for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
+                    for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
+                        Blocks[i, k, j] = new BlockInstance(1, i, k, j);
 
-            for (UInt16 i = 0; i < Constants.CHUNK_Y; i++) {
-                for (int j = 0; j < 128; j++) {
+                Render[k] = new RenderChunk(this, k);
+            }
+
+            /*for (UInt16 i = 0; i < Constants.CHUNK_Y; i++) {
+                for (int j = 0; j < 512; j++) {
 
                     UInt16 X = (UInt16)Constants.R.Next(0, Constants.CHUNK_X);
                     UInt16 Z = (UInt16)Constants.R.Next(0, Constants.CHUNK_Z);
 
                     if (Blocks[X, i, Z] == null)
-                        Blocks[X, i, Z] = new BlockInstance(B, X, i, Z);
+                        Blocks[X, i, Z] = new BlockInstance(1, X, i, Z);
                 }
 
                 Render[i] = new RenderChunk(this, i);
-            }
+            }*/
+        }
 
-            /*for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
-                for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
-                    for (UInt16 k = 0; k < Constants.CHUNK_Y; k++) {
+        public void CreateTextures() {
 
-                        Blocks[i, k, j].PlanesVisibility[1] = i == 0 || Blocks[i - 1, k, j] == null; // LEFT
-                        Blocks[i, k, j].PlanesVisibility[3] = i == Constants.CHUNK_X - 1 || Blocks[i + 1, k, j] == null; // RIGHT
-                        Blocks[i, k, j].PlanesVisibility[2] = j == 0 || Blocks[i, k, j - 1] == null; // FRONT
-                        Blocks[i, k, j].PlanesVisibility[4] = j == Constants.CHUNK_Z - 1 || Blocks[i, k, j + 1] == null; // BACK
-                        Blocks[i, k, j].PlanesVisibility[0] = k == 0 || Blocks[i, k - 1, j] == null; // TOP
-                        Blocks[i, k, j].PlanesVisibility[5] = k == Constants.CHUNK_Y - 1 || Blocks[i, k + 1, j] == null; // BOTTOM
-                    }*/
-            //genaration
+            foreach (RenderChunk RC in Render)
+                RC.CreateTextures();
         }
 
         public void Draw() {

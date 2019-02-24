@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using Tao;
 using Tao.OpenGl;
+using Tao.FreeGlut;
 using System.IO;
 
 namespace Minecraft {
@@ -16,58 +17,61 @@ namespace Minecraft {
         public uint[] TEXTURES = new uint[1];
 
         public Bitmap B { get; private set; }
-        public Bitmap BUP { get; private set; }
         public BitmapData BD { get; private set; }
+
+        public bool Prime { get; private set; }
 
         private static int q = 0;
 
-        public Texture(string filename) {
+        public Texture(string filename, bool Lock, bool Prime) {
 
             if (!File.Exists(filename))
                 return;
 
             this.B = new Bitmap(filename);
-            this.BUP = new Bitmap(this.B);
-            this.Lock();
+            this.Prime = Prime;
+            if (Lock) this.Lock();
         }
 
-        public Texture(Bitmap B) {
+        public Texture(Bitmap B, bool Lock, bool Prime) {
 
             this.B = B;
-            this.BUP = new Bitmap(this.B);
-            this.Lock();
+            this.Prime = Prime;
+            if (Lock) this.Lock();
         }
 
-        public Texture(ref Bitmap[,] B, int W, int H, double[] Color) {
+        public Texture(Dictionary<IntPair, int> Map, int MapW, int MapH, int W, int H, double[] Color, bool Lock, bool Prime) { //id arr instead of bitmap arr 
 
-            Bitmap SB = new Bitmap(W, H, PixelFormat.Format32bppRgb);
+            Bitmap SB = new Bitmap(W, H, PixelFormat.Format32bppArgb);
             Graphics G = Graphics.FromImage(SB);
 
-            int BW = B.GetLength(0);
-            int BH = B.GetLength(1);
+            G.Clear(System.Drawing.Color.Transparent);
 
-            for (int i = 0; i < BW; i++)
-                for (int j = 0; j < BH; j++)
-                    if (B[i, j] != null)
-                        G.DrawImage(B[i, j], i * W / BW, j * H / BH);
+            for(int i = 0; i < Map.Count; i++) {
+
+                KeyValuePair<IntPair, int> MI = Map.ElementAt(i);
+                G.DrawImage(ItemsSet.TEXTURES[MI.Value].B, MI.Key.X * W / MapW, MI.Key.Y * H / MapH);
+            }
 
             G.Save();
 
             //SB.Save(Constants.DataDir + "/Textures/gen" + ++q + ".png");
 
             this.B = SB;
-            this.BUP = new Bitmap(SB);
-            this.Lock();
+            this.Prime = Prime;
+            if (Lock) this.Lock();
         }
 
         private void Lock() {
 
             this.BD = B.LockBits(new Rectangle(0, 0, B.Width, B.Height),
                                  ImageLockMode.ReadOnly,
-                                 PixelFormat.Format32bppRgb);   
+                                 PixelFormat.Format32bppArgb);
         }
 
         public void Upload() {
+
+            if (Prime) return;
 
             Gl.glEnable(Gl.GL_TEXTURE_2D);
             Gl.glGenTextures(TEXTURES.Length, TEXTURES);

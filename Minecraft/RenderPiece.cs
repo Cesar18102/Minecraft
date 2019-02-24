@@ -16,6 +16,9 @@ namespace Minecraft {
         public int W { get; private set; }
         public int H { get; private set; }
 
+        public int UniTexW { get; private set; }
+        public int UniTexH { get; private set; }
+
         public int PY { get; private set; }
 
         private List<BlockInstance> Blocks = new List<BlockInstance>();
@@ -33,7 +36,7 @@ namespace Minecraft {
         private int BlockIDsLen = Constants.BlockIDs.GetLength(0);
         private int FullBlockIDsLen = Constants.FullBlockIDs.GetLength(0);
 
-        public Texture[] T = new Texture[3];
+        public int[] T = new int[3]; // change to array of ids of primes => lock and upload primes
         public List<Vector3D> MODEL_PTS = new List<Vector3D>();
         public List<Vector2D> TEX_PTS = new List<Vector2D>();
 
@@ -52,8 +55,6 @@ namespace Minecraft {
             {  0,  1  },
             { -1,  0  }
         };
-
-        public int[] CornerABSes = new int[4] { 4, 5, 1, 0 };
 
         public RenderPiece(double[] Color, Int64 PivotX, Int64 PivotZ, int PY) {
 
@@ -76,35 +77,34 @@ namespace Minecraft {
             this.BlockSize = B.Size;
         }
 
-        public void CreateTextures() {
+        public void BlocksAdded() {
 
             this.W = MaxX - MinX + 1;
             this.H = MaxZ - MinZ + 1;
 
-            this.BlocksMap = new BlockInstance[this.W, this.H];
-            Bitmap[,] TOP = new Bitmap[this.W, this.H];
+            this.UniTexW = ItemsSet.TEXTURES[Blocks[0].Planes[0].TEX_ID].B.Width;//
+            this.UniTexH = ItemsSet.TEXTURES[Blocks[0].Planes[0].TEX_ID].B.Height;//
 
-            int W = Blocks[0].Planes[0].TEXTURE.BUP.Width;
-            int H = Blocks[0].Planes[0].TEXTURE.BUP.Height;
+            this.BlocksMap = new BlockInstance[this.W, this.H];
 
             int XM = this.W;
             int ZM = this.H;
 
             foreach (BlockInstance B in Blocks) {
 
-                this.BlocksMap[B.X - MinX, B.Z - MinZ] = B;
-                TOP[B.X - MinX, B.Z - MinZ] = B.Planes[0].TEXTURE.BUP;
+                int AbsX = B.X - MinX;
+                int AbsZ = B.Z - MinZ;
 
-                if (B.X - MinX < XM && B.Z - MinZ < ZM) {
+                this.BlocksMap[AbsX, AbsZ] = B;
 
-                    XM = B.X - MinX;
-                    ZM = B.Z - MinZ;
+                if (AbsX < XM && AbsZ < ZM) {
+
+                    XM = AbsX;
+                    ZM = AbsZ;
                 }
             }
 
-            T[0] = new Texture(ref TOP, W * this.W, H * this.H, Color);
-            TOP = null;
-            ItemsSet.TEXTURES.Add(T[0]);
+            Blocks = null;
 
             Vector3D P0 = GetRealPoints(XM, ZM, XM - 1, ZM)[3];
 
@@ -138,9 +138,21 @@ namespace Minecraft {
             for (int i = 0; i < MODEL_PTS.Count; i++)
                 TEX_PTS.Add(new Vector2D(
 
-                    (MODEL_PTS[i].DX - DX) / (this.W * BlockSize.DX), 
+                    (MODEL_PTS[i].DX - DX) / (this.W * BlockSize.DX),
                     (MODEL_PTS[i].DZ - DZ) / (this.H * BlockSize.DZ)
                 ));
+        }
+
+        public void CreateTextures() {
+
+            Dictionary<IntPair, int> TOP = new Dictionary<IntPair, int>();
+
+            for (int i = 0; i < this.W; i++)
+                for (int j = 0; j < this.H; j++)
+                    if(this.BlocksMap[i, j] != null)
+                        TOP.Add(new IntPair(i, j), this.BlocksMap[i, j].Planes[0].TEX_ID);
+                        
+            T[0] = ItemsSet.Add(new Texture(TOP, this.W, this.H, this.UniTexW * this.W, this.UniTexH * this.H, Color, true, false));
         }
 
         private void PerimeterPointSearch(int X, int Z, int OX, int OZ, bool[,,] V, Vector3D LastPoint) {
@@ -185,7 +197,7 @@ namespace Minecraft {
                 }
                 else
                     break;
-            } // Passing around quad
+            }
 
             int NNX = X, NNZ = Z;
 
@@ -226,7 +238,7 @@ namespace Minecraft {
             List<Vector3D> RP = new List<Vector3D>();
 
             int Dir = 0;
-            for (; Dir < CornerDS.GetLength(0) && (CornerDS[Dir, 0] != X - OX || CornerDS[Dir, 1] != Z - OZ); Dir++) ;// something wrong
+            for (; Dir < CornerDS.GetLength(0) && (CornerDS[Dir, 0] != X - OX || CornerDS[Dir, 1] != Z - OZ); Dir++) ;
 
             for (int i = 0; i < CornerIDs.GetLength(1); i++)
                 RP.Add(new Vector3D(PTS_Ratio[PTS_IDs[CornerIDs[Dir, i]]].DX + (PivotX + MinX + X + 0.5f) * SZ.DX, 
@@ -248,12 +260,9 @@ namespace Minecraft {
 
             Gl.glColor3d(Color[0], Color[1], Color[2]);
 
-            /*for (int i = 0; i < Blocks.Count; i++)
-                Blocks[i].Draw(PivotX, PivotZ);*/
-
-            T[0].Bind();
-
             Gl.glBegin(Gl.GL_POLYGON);
+
+            ItemsSet.TEXTURES[T[0]].Bind();
 
                 for (int i = 0; i < MODEL_PTS.Count; i++) {
 

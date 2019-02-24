@@ -47,7 +47,7 @@ namespace Minecraft {
             }
 
             foreach (RenderPiece P in Pieces)
-                P.CreateTextures();
+                P.BlocksAdded();
         }
 
         private void PlaneDrawSearch(int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P) {
@@ -74,9 +74,10 @@ namespace Minecraft {
             PlaneDrawSearch(NEW.X, NEW.Y, ToVisit, P);
         }
 
-        private void CalcPoints(List<BlockInstance> B) {
+        public void CreateTextures() {
 
-
+            foreach (RenderPiece RP in Pieces)
+                RP.CreateTextures();
         }
 
         public void Draw() {

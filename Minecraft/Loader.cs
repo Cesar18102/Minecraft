@@ -109,10 +109,15 @@ namespace Minecraft {
                 }
 
                 LoadMessage(IC.Name + "s", ref LoadLayer, false);
+
+                ItemSrcInfo.Close();
+                ItemSrcInfo.Dispose();
             }
 
             LoadMessage("Items info", ref LoadLayer, false);
 
+            initDataStream.Close();
+            initDataStream.Dispose();
         }
 
         private static void LoadMessage(string obj, ref int layer, bool IsStart) {

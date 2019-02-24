@@ -162,6 +162,9 @@ namespace Minecraft {
 
             for (int i = 0; i < PlanesCount; i++)
                 this.Planes.Add(new Plane(BlockInfo));
+
+            BlockInfo.Close();
+            BlockInfo.Dispose();
         }
 
         private List<Constants.StateBounds<Block>> ParseConditions(Stream S) {

@@ -82,6 +82,7 @@ namespace Minecraft {
             Gl.glEnable(Gl.GL_BLEND);
             Gl.glBlendFunc(Gl.GL_SRC_ALPHA, Gl.GL_ONE_MINUS_SRC_ALPHA);
             Gl.glDisable(Gl.GL_CULL_FACE);
+            Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_FILL);//?
 
             Gl.glClearDepth(1000f);
             Gl.glEnable(Gl.GL_DEPTH_TEST);
@@ -150,7 +151,7 @@ namespace Minecraft {
             Gl.glMatrixMode(Gl.GL_PROJECTION);
             Gl.glLoadIdentity();
             Gl.glViewport(0, 0, width, height);
-            Glu.gluPerspective(90, width * 0.97 / height, 0.1f, 10f);
+            Glu.gluPerspective(90, width * 0.97 / height, 0.1f, 100f);
             Gl.glMatrixMode(Gl.GL_MODELVIEW);
 
             this.Reshape(width, height);
