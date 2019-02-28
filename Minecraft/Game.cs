@@ -24,6 +24,15 @@ namespace Minecraft {
         public delegate void LoadingLog(string message, int layer);
         public event LoadingLog LoadingLogging;
 
+        private static int Width = 5;
+        private static int Height = 5;
+
+        int WCur = -Width / 2;
+        int WMax = Width / 2;
+
+        int HCur = -Height / 2;
+        int HMax = Height / 2;
+
         public void Start() {
 
             CAM = new Camera(0, 0.2f, 0, 1, 0, 1, 0, 1, 0);
@@ -39,11 +48,18 @@ namespace Minecraft {
 
             W = new World("Test");
 
-            int Width = 15;
-            int Height = 11;
+            GLW.Open();
+            GLW.RenderStart();
+        }
+
+        public void InitGraphics() {
+
+            Gl.glShadeModel(Gl.GL_SMOOTH);
+            Gl.glHint(Gl.GL_PERSPECTIVE_CORRECTION_HINT, Gl.GL_NEAREST);
 
             for (int i = -Width / 2; i <= Width / 2; i++)
-                for (int j = -Height / 2; j <= Height / 2; j++) {
+                for (int j = -Height / 2; j <= Height / 2; j++)
+                {
 
                     LoadingLogging("Generating chunk " + ((i + Width / 2) * Height + j + Height / 2 + 1).ToString() + "/" + Width * Height, 0);
 
@@ -52,18 +68,6 @@ namespace Minecraft {
                     W.AddChunk(C);
                 }
 
-            GLW.Open();
-            GLW.RenderStart();
-        }
-
-        public void InitGraphics() {
-
-            Gl.glShadeModel(Gl.GL_SMOOTH);
-            Gl.glHint(Gl.GL_PERSPECTIVE_CORRECTION_HINT, Gl.GL_FASTEST);
-
-            foreach (Texture T in ItemsSet.TEXTURES)
-                T.Upload();
-
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
         }
 
@@ -71,6 +75,22 @@ namespace Minecraft {
 
             Gl.glClearColor(255, 255, 255, 0);
             Cursor.Hide();
+
+            /*if (WCur <= WMax) {
+
+                Task.Factory.StartNew(() => {
+
+                    LoadingLogging("Generating chunk " + ((WCur + Width / 2) * Height + HCur + Height / 2 + 1).ToString() + "/" + Width * Height, 0);
+                    Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * WCur), Convert.ToInt64(Constants.CHUNK_Z * HCur), true);
+                    C.CreateTextures();
+                    W.AddChunk(C);
+                });
+
+                HCur++;
+                WCur += HCur / HMax;
+                HCur %= HMax;
+            }*/
+
             W.Draw();
         }
 
@@ -90,7 +110,7 @@ namespace Minecraft {
             double DZ = OldZ - EyeZ;
             double L = Math.Sqrt(DX * DX + DZ * DZ);
 
-            double SPEED = 0.02 * (Glut.glutGetModifiers() == Glut.GLUT_ACTIVE_SHIFT ? 2 : 1);
+            double SPEED = 0.02 * (Glut.glutGetModifiers() == Glut.GLUT_ACTIVE_SHIFT ? 5 : 1);
             float DDX = (float)(SPEED * DX / L);
             float DDZ = (float)(SPEED * DZ / L);
 
@@ -166,7 +186,7 @@ namespace Minecraft {
 
                     break;
 
-                // \s
+                // X
                 case 120:
 
                     CAM.Eye = new Vector3D(CAM.Eye.DX, CAM.Eye.DY - 0.1f, CAM.Eye.DZ);

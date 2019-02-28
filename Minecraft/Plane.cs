@@ -27,7 +27,7 @@ namespace Minecraft {
             UInt16 TextureSrcLen = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(S, 2));
             string TextureSrc = ByteParser.ConvertBytes<string>(ByteParser.GetBytes(S, TextureSrcLen));
 
-            this.TEX_ID = ItemsSet.Add(new Texture(Constants.DataDir + TextureSrc, false, true));
+            this.TEX_ID = ItemsSet.Add(new Texture(Constants.DataDir + TextureSrc, true));
 
             UInt16 PlanePointsSequnceCount = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(S, 2));
 

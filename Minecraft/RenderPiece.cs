@@ -36,9 +36,10 @@ namespace Minecraft {
         private int BlockIDsLen = Constants.BlockIDs.GetLength(0);
         private int FullBlockIDsLen = Constants.FullBlockIDs.GetLength(0);
 
-        public int[] T = new int[3]; // change to array of ids of primes => lock and upload primes
-        public List<Vector3D> MODEL_PTS = new List<Vector3D>();
-        public List<Vector2D> TEX_PTS = new List<Vector2D>();
+        private int[] T = new int[3]; // add side and bottom textures
+        private bool[] Visible = new bool[3] { true, true, true };
+        private List<Vector3D>[] MODEL_PTS = new List<Vector3D>[3];
+        private List<Vector2D>[] TEX_PTS = new List<Vector2D>[3];
 
         public int[,] CornerIDs = new int[4, 4] {
 
@@ -82,8 +83,8 @@ namespace Minecraft {
             this.W = MaxX - MinX + 1;
             this.H = MaxZ - MinZ + 1;
 
-            this.UniTexW = ItemsSet.TEXTURES[Blocks[0].Planes[0].TEX_ID].B.Width;//
-            this.UniTexH = ItemsSet.TEXTURES[Blocks[0].Planes[0].TEX_ID].B.Height;//
+            this.UniTexW = ItemsSet.TEXTURES[Blocks[0].Planes[0].TEX_ID].B.Width;
+            this.UniTexH = ItemsSet.TEXTURES[Blocks[0].Planes[0].TEX_ID].B.Height;
 
             this.BlocksMap = new BlockInstance[this.W, this.H];
 
@@ -106,40 +107,46 @@ namespace Minecraft {
 
             Blocks = null;
 
-            Vector3D P0 = GetRealPoints(XM, ZM, XM - 1, ZM)[3];
+            for (int i = 0; i < 3; i++) {
 
-            MODEL_PTS.Add(P0);
-            PerimeterPointSearch(XM, ZM, XM - 1, ZM, new bool[this.W, this.H, 4], P0);
-            MODEL_PTS.Add(P0);
+                MODEL_PTS[i] = new List<Vector3D>();
+                TEX_PTS[i] = new List<Vector2D>();
+            }
 
-            for (int i = 0; i < MODEL_PTS.Count; i++) {
+            Vector3D P0 = GetRealPoints(XM, ZM, XM - 1, ZM, 0)[3];
+
+            MODEL_PTS[0].Add(P0);
+            PerimeterPointSearch(XM, ZM, XM - 1, ZM, new bool[this.W, this.H, 4], P0, ref MODEL_PTS[0]);
+            MODEL_PTS[0].Add(P0);
+
+            for (int i = 0; i < MODEL_PTS[0].Count; i++) {
 
                 int CX = 0;
                 int CZ = 0;
 
-                for (int j = i + 1; j < MODEL_PTS.Count; j++) {
+                for (int j = i + 1; j < MODEL_PTS[0].Count; j++) {
 
-                    if (MODEL_PTS[j].DX == MODEL_PTS[i].DX) CX++;
+                    if (MODEL_PTS[0][j].DX == MODEL_PTS[0][i].DX) CX++;
                     else if (CX != 0) break;
 
-                    if (MODEL_PTS[j].DZ == MODEL_PTS[i].DZ) CZ++;
+                    if (MODEL_PTS[0][j].DZ == MODEL_PTS[0][i].DZ) CZ++;
                     else if (CZ != 0) break;
                 }
 
                 int C = Math.Max(CX, CZ) - 1;
 
                 for (int j = 1; j <= C; j++)
-                    MODEL_PTS.RemoveAt(i + 1);
+                    MODEL_PTS[0].RemoveAt(i + 1);
             }
 
             float DX = (PivotX + MinX) * BlockSize.DX;
             float DZ = (PivotZ + MinZ) * BlockSize.DZ;
 
-            for (int i = 0; i < MODEL_PTS.Count; i++)
-                TEX_PTS.Add(new Vector2D(
+            for (int i = 0; i < MODEL_PTS[0].Count; i++)
+                TEX_PTS[0].Add(new Vector2D(
 
-                    (MODEL_PTS[i].DX - DX) / (this.W * BlockSize.DX),
-                    (MODEL_PTS[i].DZ - DZ) / (this.H * BlockSize.DZ)
+                    (MODEL_PTS[0][i].DX - DX) / (this.W * BlockSize.DX),
+                    (MODEL_PTS[0][i].DZ - DZ) / (this.H * BlockSize.DZ)
                 ));
         }
 
@@ -152,12 +159,13 @@ namespace Minecraft {
                     if(this.BlocksMap[i, j] != null)
                         TOP.Add(new IntPair(i, j), this.BlocksMap[i, j].Planes[0].TEX_ID);
                         
-            T[0] = ItemsSet.Add(new Texture(TOP, this.W, this.H, this.UniTexW * this.W, this.UniTexH * this.H, Color, true, false));
+            T[0] = ItemsSet.Add(new Texture(TOP, this.W, this.H, this.UniTexW * this.W, this.UniTexH * this.H, Color, false));
+            ItemsSet.TEXTURES[T[0]].Upload();
         }
 
-        private void PerimeterPointSearch(int X, int Z, int OX, int OZ, bool[,,] V, Vector3D LastPoint) {
+        private void PerimeterPointSearch(int X, int Z, int OX, int OZ, bool[,,] V, Vector3D LastPoint, ref List<Vector3D> PTS_BUFFER, int PlaneID = 0) {
 
-            List<Vector3D> P = GetRealPoints(X, Z, OX, OZ);
+            List<Vector3D> P = GetRealPoints(X, Z, OX, OZ, PlaneID);
             int LastPID = P.IndexOf(LastPoint);
             V[X, Z, GetAbsCornerID(X, Z, OX, OZ, LastPID)] = true;
 
@@ -178,7 +186,7 @@ namespace Minecraft {
 
                     if (NX >= 0 && NX < W && NZ >= 0 && NZ < H && this.BlocksMap[NX, NZ] != null) {
 
-                        List<Vector3D> NP = GetRealPoints(NX, NZ, X, Z);
+                        List<Vector3D> NP = GetRealPoints(NX, NZ, X, Z, PlaneID);
                         if (NP.Contains(LastPoint) && NP.Contains(P[i])) {
 
                             Outer = false;
@@ -191,7 +199,7 @@ namespace Minecraft {
 
                 if (Outer && !V[X, Z, AbsID]) {
 
-                    MODEL_PTS.Add(P[i]);
+                    PTS_BUFFER.Add(P[i]);
                     LastPoint = P[i];
                     V[X, Z, AbsID] = true;
                 }
@@ -208,7 +216,7 @@ namespace Minecraft {
 
                 if (RNX >= 0 && RNX < W && RNZ >= 0 && RNZ < H && this.BlocksMap[RNX, RNZ] != null) {
 
-                    List<Vector3D> NP = GetRealPoints(RNX, RNZ, X, Z);
+                    List<Vector3D> NP = GetRealPoints(RNX, RNZ, X, Z, PlaneID);
                     int PID = NP.IndexOf(LastPoint);
 
                     if (PID != -1 && !V[RNX, RNZ, GetAbsCornerID(RNX, RNZ, X, Z, PID)]) {
@@ -223,10 +231,10 @@ namespace Minecraft {
             if (NNX == X && NNZ == Z)
                 return;
 
-            PerimeterPointSearch(NNX, NNZ, X, Z, V, LastPoint);
+            PerimeterPointSearch(NNX, NNZ, X, Z, V, LastPoint, ref PTS_BUFFER);
         }
 
-        private List<Vector3D> GetRealPoints(int X, int Z, int OX, int OZ) {
+        private List<Vector3D> GetRealPoints(int X, int Z, int OX, int OZ, int PlaneID) {
 
             if (this.BlocksMap[X, Z] == null)
                 return new List<Vector3D>();
@@ -258,19 +266,25 @@ namespace Minecraft {
 
         public void Draw() {
 
-            Gl.glColor3d(Color[0], Color[1], Color[2]);
+            //Gl.glColor3d(Color[0], Color[1], Color[2]); 
 
-            Gl.glBegin(Gl.GL_POLYGON);
+            for (int i = 0; i < 1; i++) {
 
-            ItemsSet.TEXTURES[T[0]].Bind();
+                if (!Visible[i])
+                    continue;
 
-                for (int i = 0; i < MODEL_PTS.Count; i++) {
+                Gl.glBegin(Gl.GL_POLYGON);
 
-                    Gl.glTexCoord2f(TEX_PTS[i].DX, TEX_PTS[i].DY);
-                    Gl.glVertex3f(MODEL_PTS[i].DX, MODEL_PTS[i].DY, MODEL_PTS[i].DZ);
+                ItemsSet.TEXTURES[T[i]].Bind();
+
+                for (int j = 0; j < MODEL_PTS[i].Count; j++) {
+
+                    Gl.glTexCoord2f(TEX_PTS[i][j].DX, TEX_PTS[i][j].DY);
+                    Gl.glVertex3f(MODEL_PTS[i][j].DX, MODEL_PTS[i][j].DY, MODEL_PTS[i][j].DZ);
                 }
 
-            Gl.glEnd();
+                Gl.glEnd();
+            }
         }
     }
 }

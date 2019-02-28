@@ -23,26 +23,27 @@ namespace Minecraft {
 
         private static int q = 0;
 
-        public Texture(string filename, bool Lock, bool Prime) {
+        public Texture(string filename, bool Prime) {
 
             if (!File.Exists(filename))
                 return;
 
             this.B = new Bitmap(filename);
             this.Prime = Prime;
-            if (Lock) this.Lock();
+            if (!Prime) this.Lock();
         }
 
         public Texture(Bitmap B, bool Lock, bool Prime) {
 
             this.B = B;
             this.Prime = Prime;
-            if (Lock) this.Lock();
+            if (!Prime) this.Lock();
         }
 
-        public Texture(Dictionary<IntPair, int> Map, int MapW, int MapH, int W, int H, double[] Color, bool Lock, bool Prime) { //id arr instead of bitmap arr 
+        public Texture(Dictionary<IntPair, int> Map, int MapW, int MapH, int W, int H, double[] Color, bool Prime) {
 
             Bitmap SB = new Bitmap(W, H, PixelFormat.Format32bppArgb);
+
             Graphics G = Graphics.FromImage(SB);
 
             G.Clear(System.Drawing.Color.Transparent);
@@ -59,7 +60,7 @@ namespace Minecraft {
 
             this.B = SB;
             this.Prime = Prime;
-            if (Lock) this.Lock();
+            if (!Prime) this.Lock();
         }
 
         private void Lock() {
@@ -84,11 +85,14 @@ namespace Minecraft {
                                 B.Width, B.Height, 0, Gl.GL_RGBA,
                                 Gl.GL_UNSIGNED_BYTE, BD.Scan0);
 
-                Gl.glTexParameteri(Gl.GL_TEXTURE_2D, Gl.GL_TEXTURE_MIN_FILTER, Gl.GL_LINEAR);
-                Gl.glTexParameteri(Gl.GL_TEXTURE_2D, Gl.GL_TEXTURE_MAG_FILTER, Gl.GL_LINEAR);
+                Gl.glTexParameteri(Gl.GL_TEXTURE_2D, Gl.GL_TEXTURE_MIN_FILTER, Gl.GL_NEAREST);
+                Gl.glTexParameteri(Gl.GL_TEXTURE_2D, Gl.GL_TEXTURE_MAG_FILTER, Gl.GL_NEAREST);
             }
 
             B.UnlockBits(BD);
+
+            B.Dispose();
+            BD = null;
         }
 
         public void Bind() {

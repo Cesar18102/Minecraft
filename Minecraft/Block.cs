@@ -106,7 +106,9 @@ namespace Minecraft {
             float YS = ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4));
             float ZS = ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4));
 
-            this.Size = new Vector3D(XS, YS, ZS);
+            float D = 1;
+
+            this.Size = new Vector3D(XS / D, YS / D, ZS / D);
 
             this.LootByTool = new Dictionary<UInt64, Dictionary<UInt64, UInt32>>();
             UInt16 ToolCount = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(BlockInfo, 2));
@@ -148,9 +150,9 @@ namespace Minecraft {
             UInt16 ModelPointsCount = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(BlockInfo, 2));
 
             for (int i = 0; i < ModelPointsCount; i++)
-                ModelPoints.Add(new Vector3D(ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4)),
-                                             ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4)),
-                                             ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4))));
+                ModelPoints.Add(new Vector3D(ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4)) / D,
+                                             ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4)) / D,
+                                             ByteParser.ConvertBytes<float>(ByteParser.GetBytes(BlockInfo, 4)) / D));
 
             UInt16 TexturePointsCount = ByteParser.ConvertBytes<UInt16>(ByteParser.GetBytes(BlockInfo, 2));
 
