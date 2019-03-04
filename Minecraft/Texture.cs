@@ -19,7 +19,11 @@ namespace Minecraft {
         public Bitmap B { get; private set; }
         public BitmapData BD { get; private set; }
 
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
         public bool Prime { get; private set; }
+        public bool Uploaded { get; private set; }
 
         private static int q = 0;
 
@@ -29,6 +33,8 @@ namespace Minecraft {
                 return;
 
             this.B = new Bitmap(filename);
+            this.Width = B.Width;
+            this.Height = B.Height;
             this.Prime = Prime;
             if (!Prime) this.Lock();
         }
@@ -36,6 +42,8 @@ namespace Minecraft {
         public Texture(Bitmap B, bool Lock, bool Prime) {
 
             this.B = B;
+            this.Width = B.Width;
+            this.Height = B.Height;
             this.Prime = Prime;
             if (!Prime) this.Lock();
         }
@@ -43,10 +51,13 @@ namespace Minecraft {
         public Texture(Dictionary<IntPair, int> Map, int MapW, int MapH, int W, int H, double[] Color, bool Prime) {
 
             Bitmap SB = new Bitmap(W, H, PixelFormat.Format32bppArgb);
+            SB.MakeTransparent();
+            this.Width = W;
+            this.Height = H;
+
+            Constants.GraphicsBusy = true;
 
             Graphics G = Graphics.FromImage(SB);
-
-            G.Clear(System.Drawing.Color.Transparent);
 
             for(int i = 0; i < Map.Count; i++) {
 
@@ -54,8 +65,9 @@ namespace Minecraft {
                 G.DrawImage(ItemsSet.TEXTURES[MI.Value].B, MI.Key.X * W / MapW, MI.Key.Y * H / MapH);
             }
 
-            G.Save();
+            G.Dispose();
 
+            Constants.GraphicsBusy = false;
             //SB.Save(Constants.DataDir + "/Textures/gen" + ++q + ".png");
 
             this.B = SB;
@@ -72,7 +84,7 @@ namespace Minecraft {
 
         public void Upload() {
 
-            if (Prime) return;
+            if (Prime || Uploaded) return;
 
             Gl.glEnable(Gl.GL_TEXTURE_2D);
             Gl.glGenTextures(TEXTURES.Length, TEXTURES);
@@ -93,6 +105,8 @@ namespace Minecraft {
 
             B.Dispose();
             BD = null;
+
+            Uploaded = true;
         }
 
         public void Bind() {

@@ -88,8 +88,6 @@ namespace Minecraft {
             Gl.glEnable(Gl.GL_DEPTH_TEST);
             Gl.glDepthFunc(Gl.GL_LEQUAL);
 
-            this.InitFunc();
-
             Glut.glutDisplayFunc(RenderFunc);
             Glut.glutIdleFunc(RenderFunc);
             Glut.glutTimerFunc(1000 / FPS, TimerFunc, 0);
@@ -99,6 +97,8 @@ namespace Minecraft {
             Glut.glutPassiveMotionFunc(MouseMoveFunc);
             Glut.glutSpecialFunc(SpecialKeyDownFunc);
             Glut.glutSpecialUpFunc(SpecialKeyUpFunc);
+
+            this.InitFunc();
         }
 
         public void RenderStart() {

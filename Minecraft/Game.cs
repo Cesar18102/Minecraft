@@ -24,14 +24,8 @@ namespace Minecraft {
         public delegate void LoadingLog(string message, int layer);
         public event LoadingLog LoadingLogging;
 
-        private static int Width = 5;
-        private static int Height = 5;
-
-        int WCur = -Width / 2;
-        int WMax = Width / 2;
-
-        int HCur = -Height / 2;
-        int HMax = Height / 2;
+        private static int Width = 11;
+        private static int Height = 11;
 
         public void Start() {
 
@@ -49,49 +43,60 @@ namespace Minecraft {
             W = new World("Test");
 
             GLW.Open();
+
             GLW.RenderStart();
         }
 
-        public void InitGraphics() {
+        public async void InitGraphics() {
 
             Gl.glShadeModel(Gl.GL_SMOOTH);
             Gl.glHint(Gl.GL_PERSPECTIVE_CORRECTION_HINT, Gl.GL_NEAREST);
 
-            for (int i = -Width / 2; i <= Width / 2; i++)
-                for (int j = -Height / 2; j <= Height / 2; j++)
-                {
-
-                    LoadingLogging("Generating chunk " + ((i + Width / 2) * Height + j + Height / 2 + 1).ToString() + "/" + Width * Height, 0);
-
-                    Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * i), Convert.ToInt64(Constants.CHUNK_Z * j), true);
-                    C.CreateTextures();
-                    W.AddChunk(C);
-                }
-
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
+
+            await Task.Run(() => GenerateView(0, 0, 11));
         }
 
         public void Render() {
 
+            lock (ItemsSet.TEXTURES) {
+
+                int L = ItemsSet.TEXTURES.Count;
+                for (int i = 0; i < L; i++)
+                    ItemsSet.TEXTURES[i].Upload();
+            }
+
             Gl.glClearColor(255, 255, 255, 0);
             Cursor.Hide();
-
-            /*if (WCur <= WMax) {
-
-                Task.Factory.StartNew(() => {
-
-                    LoadingLogging("Generating chunk " + ((WCur + Width / 2) * Height + HCur + Height / 2 + 1).ToString() + "/" + Width * Height, 0);
-                    Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * WCur), Convert.ToInt64(Constants.CHUNK_Z * HCur), true);
-                    C.CreateTextures();
-                    W.AddChunk(C);
-                });
-
-                HCur++;
-                WCur += HCur / HMax;
-                HCur %= HMax;
-            }*/
-
             W.Draw();
+        }
+
+        public void GenerateChunk(ref int WC, ref int HC, int WMN, int WMX, int HMN, int HMX, int W, int H, World WRLD) {
+
+            if (WC <= WMX && !Constants.GraphicsBusy) {
+
+                LoadingLogging("Generating chunk " + ((WC + WMX) * H + HC + HMX + 1).ToString() + "/" + W * H, 0);
+                Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * WC), Convert.ToInt64(Constants.CHUNK_Z * HC), true);
+                C.CreateTextures();
+                WRLD.AddChunk(C);
+
+                if (HC++ == HMX) { WC++; HC = HMN; }
+            }
+        }
+
+        public void GenerateView(int X, int Z, int RD) {
+
+            int WCur = X - RD / 2;
+            int WMin = X - RD / 2;
+            int WMax = X + RD / 2;
+
+            int HCur = Z - RD / 2;
+            int HMin = Z - RD / 2;
+            int HMax = Z + RD / 2;
+
+            for (int i = 0; i < RD; i++)
+                for(int j = 0; j < RD; j++)
+                    GenerateChunk(ref WCur, ref HCur, WMin, WMax, HMin, HMax, Width, Height, W);
         }
 
         public void Reshape(int w, int h) {

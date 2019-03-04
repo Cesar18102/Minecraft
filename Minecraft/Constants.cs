@@ -14,6 +14,8 @@ namespace Minecraft {
 
         public static Random R = new Random();
 
+        public static bool GraphicsBusy = false;
+
         public delegate bool StateBounds<T>(T val);
 
         public static UInt16 CHUNK_X = 16;

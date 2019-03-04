@@ -17,7 +17,7 @@ namespace Minecraft {
         public UInt16 Y { get; private set; }
         public UInt16 Z { get; private set; }
 
-        public BlockInstance(UInt64 BID, UInt16 CX, UInt16 CY, UInt16 CZ) : base(ItemsSet.ITEMS[BID] as Block)  { // Block id instead of  Block and just add block to items set
+        public BlockInstance(UInt64 BID, UInt16 CX, UInt16 CY, UInt16 CZ) : base(ItemsSet.ITEMS[BID] as Block)  {
 
             this.DurabilityValue = Durability;
             this.TemperatureValue = Temperature;
