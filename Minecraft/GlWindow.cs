@@ -114,7 +114,7 @@ namespace Minecraft {
 
         public void RenderFunc() {
 
-            Gl.glClear(Gl.GL_COLOR_BUFFER_BIT | Gl.GL_DEPTH_BUFFER_BIT);
+            Gl.glClear(Gl.GL_COLOR_BUFFER_BIT | Gl.GL_DEPTH_BUFFER_BIT | Gl.GL_STENCIL_BUFFER_BIT);//
             Gl.glLoadIdentity();
             UpdateCamera();
 
@@ -135,7 +135,7 @@ namespace Minecraft {
             Gl.glMatrixMode(Gl.GL_PROJECTION);
             Gl.glLoadIdentity();
             Gl.glViewport(0, 0, width, height);
-            Glu.gluPerspective(90, width * 0.97 / height, 0.01f, 100f);
+            Glu.gluPerspective(90, width * 0.97 / height, 0.001f, 100f);
             Gl.glMatrixMode(Gl.GL_MODELVIEW);
 
             this.Reshape(width, height);

@@ -24,12 +24,9 @@ namespace Minecraft {
         public delegate void LoadingLog(string message, int layer);
         public event LoadingLog LoadingLogging;
 
-        private static int Width = 11;
-        private static int Height = 11;
-
         public void Start() {
 
-            CAM = new Camera(0, 0.2f, 0, 1, 0, 1, 0, 1, 0);
+            CAM = new Camera(0, 7, 0, 1, 6, 1, 0, 1, 0);
 
             GLW = new GlWindow(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height,
                                0, 0, "Minecraft", 60, InitGraphics, Render, Reshape, KeyDown,
@@ -52,9 +49,14 @@ namespace Minecraft {
             Gl.glShadeModel(Gl.GL_SMOOTH);
             Gl.glHint(Gl.GL_PERSPECTIVE_CORRECTION_HINT, Gl.GL_NEAREST);
 
+            Gl.glEnable(Gl.GL_LIGHTING);
+            Gl.glEnable(Gl.GL_COLOR_MATERIAL);
+            Gl.glEnable(Gl.GL_STENCIL_TEST);
+            /*Gl.glColorMaterial(Gl.GL_FRONT, Gl.GL_DIFFUSE);*/
+
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
 
-            await Task.Run(() => GenerateView(0, 0, 11));
+            await Task.Run(() => GenerateView(0, 0, 3));
         }
 
         public void Render() {
@@ -96,7 +98,7 @@ namespace Minecraft {
 
             for (int i = 0; i < RD; i++)
                 for(int j = 0; j < RD; j++)
-                    GenerateChunk(ref WCur, ref HCur, WMin, WMax, HMin, HMax, Width, Height, W);
+                    GenerateChunk(ref WCur, ref HCur, WMin, WMax, HMin, HMax, RD, RD, W);
         }
 
         public void Reshape(int w, int h) {

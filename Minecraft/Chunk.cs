@@ -47,21 +47,31 @@ namespace Minecraft {
                     for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
                         Blocks[i, k, j] = new BlockInstance(1, i, k, j);
 
+                Blocks[0, k, 5] = null;
                 Render[k] = new RenderChunk(this, k);
             }
 
-            /*for (UInt16 i = 0; i < Constants.CHUNK_Y; i++) {
-                for (int j = 0; j < 512; j++) {
+            /*for (Int16 i = (Int16)(Constants.CHUNK_Y - 1); i >= 0; i--) {
+                for (int j = 0; j < 1024; j++) {
 
                     UInt16 X = (UInt16)Constants.R.Next(0, Constants.CHUNK_X);
                     UInt16 Z = (UInt16)Constants.R.Next(0, Constants.CHUNK_Z);
 
                     if (Blocks[X, i, Z] == null)
-                        Blocks[X, i, Z] = new BlockInstance(1, X, i, Z);
+                        Blocks[X, i, Z] = new BlockInstance(1, X, (UInt16)i, Z);
                 }
 
-                Render[i] = new RenderChunk(this, i);
+                Render[i] = new RenderChunk(this, (UInt16)i);
             }*/
+
+            bool[,] UMask = new bool[Constants.CHUNK_X, Constants.CHUNK_X];
+            bool[,] LMask = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];
+
+            for (int i = 0; i < Constants.CHUNK_Y; UMask = Render[i].UpperMask, LMask = Render[i].LowerMask, i++) {
+
+                Render[i].LoadChunkVisibility(UMask, LMask);
+                Render[i].GenerateRenderPieces();
+            }
         }
 
         public void CreateTextures() {

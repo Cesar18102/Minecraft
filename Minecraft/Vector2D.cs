@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minecraft {
 
-    public class Vector2D {
+    public class Vector2D : IVector {
 
         public float DX { get; private set; }
         public float DY { get; private set; }

@@ -51,7 +51,7 @@ namespace Minecraft {
         public Texture(Dictionary<IntPair, int> Map, int MapW, int MapH, int W, int H, double[] Color, bool Prime) {
 
             Bitmap SB = new Bitmap(W, H, PixelFormat.Format32bppArgb);
-            SB.MakeTransparent();
+            //SB.MakeTransparent();
             this.Width = W;
             this.Height = H;
 

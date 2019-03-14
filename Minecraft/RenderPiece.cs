@@ -38,12 +38,24 @@ namespace Minecraft {
 
         private List<int> SideTexIDs = new List<int>();
 
-        private int[] T = new int[3];
+        private int[] T = new int[3]; // TOP, BOT, SIDE
         private bool[] Visible = new bool[3] { true, true, true };
         private List<Vector3D>[] MODEL_PTS = new List<Vector3D>[3];
         private List<Vector2D>[] TEX_PTS = new List<Vector2D>[3];
 
+        private Polygon[] POLYS = new Polygon[2];
+
+        public BlockInstance this[int i] { get { return Blocks != null && i >= 0 && i < Blocks.Count ? Blocks[i] : null; } }
+        public int BlocksCount { get; private set; }
+
         private int TotalModelPointsCount = 0;
+
+        public enum MODEL_SIDE : int {
+
+            TOP,
+            BOT,
+            SIDE
+        }
 
         public int[,] CornerIDs = new int[4, 4] {
 
@@ -70,6 +82,13 @@ namespace Minecraft {
             Array.Copy(Color, this.Color, Color.Length);
         }
 
+        public void SetVisibility(bool TOP, bool BOT, bool SIDE) {
+
+            Visible[(int)MODEL_SIDE.TOP] = TOP;
+            Visible[(int)MODEL_SIDE.BOT] = BOT;
+            Visible[(int)MODEL_SIDE.SIDE] = SIDE;
+        }
+
         public void AddBlock(BlockInstance B) {
 
             this.Blocks.Add(B);
@@ -80,9 +99,11 @@ namespace Minecraft {
             if (B.Z < MinZ) MinZ = B.Z;
 
             this.BlockSize = B.Size;
+            BlocksCount = Blocks.Count;
         }
 
-        public void BlocksAdded() {
+        public void BlocksAdded()
+        {
 
             this.W = MaxX - MinX + 1;
             this.H = MaxZ - MinZ + 1;
@@ -95,14 +116,16 @@ namespace Minecraft {
             int XM = this.W;
             int ZM = this.H;
 
-            foreach (BlockInstance B in Blocks) {
+            foreach (BlockInstance B in Blocks)
+            {
 
                 int AbsX = B.X - MinX;
                 int AbsZ = B.Z - MinZ;
 
                 this.BlocksMap[AbsX, AbsZ] = B;
 
-                if (AbsX < XM && AbsZ < ZM) {
+                if (AbsX < XM && AbsZ < ZM)
+                {
 
                     XM = AbsX;
                     ZM = AbsZ;
@@ -111,7 +134,8 @@ namespace Minecraft {
 
             Blocks = null;
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; i++)
+            {
 
                 MODEL_PTS[i] = new List<Vector3D>();
                 TEX_PTS[i] = new List<Vector2D>();
@@ -128,12 +152,14 @@ namespace Minecraft {
 
             TotalModelPointsCount = MODEL_PTS[0].Count - 1;
 
+            //removing imtermediate points
             for (int i = 0; i < MODEL_PTS[0].Count; i++) {
 
                 int CX = 0;
                 int CZ = 0;
 
-                for (int j = i + 1; j < MODEL_PTS[0].Count; j++) {
+                for (int j = i + 1; j < MODEL_PTS[0].Count; j++)
+                {
 
                     if (MODEL_PTS[0][j].DX == MODEL_PTS[0][i].DX) CX++;
                     else if (CX != 0) break;
@@ -148,9 +174,11 @@ namespace Minecraft {
                     MODEL_PTS[0].RemoveAt(i + 1);
             }
 
+            // constructing bottom
             for (int i = 0; i < MODEL_PTS[0].Count; i++)
                 MODEL_PTS[1].Add(GetBottomPoint(MODEL_PTS[0][i]));
 
+            // constructing side 
             for (int i = 0; i < MODEL_PTS[0].Count; i++)
                 MODEL_PTS[2].Add(MODEL_PTS[0][i]);
 
@@ -160,6 +188,7 @@ namespace Minecraft {
             float DX = (PivotX + MinX) * BlockSize.DX;
             float DZ = (PivotZ + MinZ) * BlockSize.DZ;
 
+            // constructing texture points
             for (int i = 0; i < MODEL_PTS[0].Count; i++) {
 
                 TEX_PTS[0].Add(new Vector2D(
@@ -206,6 +235,15 @@ namespace Minecraft {
                 TEX_PTS[2].Add(new Vector2D(TEX_DX, 1));
 
                 TEX_DX = D % 1.0f;
+            }
+        }
+
+        public void Triangulate() {
+
+            for (int i = 0; i < 2; i++) {
+
+                POLYS[i] = new Polygon(MODEL_PTS[i], TEX_PTS[i]);
+                POLYS[i].Triangulate();
             }
         }
 
@@ -327,9 +365,29 @@ namespace Minecraft {
             return this.CornerIDs[Dir, CI];
         }
 
-        public void Draw() {
+        private void DrawTOP() {
 
-            //Gl.glColor3d(Color[0], Color[1], Color[2]); 
+
+        }
+
+        public void Draw() { // draw polygon without "ears", remove holes, do not render invisible pieces
+
+            Gl.glColor3d(Color[0], Color[1], Color[2]);
+            //Gl.glEnable(Gl.GL_LIGHT0);
+
+            Gl.glLightModelfv(Gl.GL_LIGHT_MODEL_AMBIENT, new float[] { 1f, 1f, 1f, 1f });
+            
+            /*Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_POSITION, new float[] { 5, 10, 5, 1 });
+            Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_SPOT_DIRECTION, new float[] { 0, -1, 0 });
+            //Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_CONSTANT_ATTENUATION, new float[] { 0.00001f });
+
+            Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_DIFFUSE, new float[] { 0.5f, 0.5f, 0, 1f });
+            //Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_SPECULAR, new float[] { 0.5f, 0.5f, 0.5f , 1f });
+            //Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_AMBIENT, new float[] { 0.2f, 0.2f, 0.2f, 1f });
+
+            Gl.glMaterialfv(Gl.GL_FRONT, Gl.GL_DIFFUSE, new float[] { 0.5f, 0.5f, 0, 1f });
+            //Gl.glMaterialfv(Gl.GL_FRONT, Gl.GL_SPECULAR, new float[] { 0.5f, 0.5f, 0.5f, 1f });
+            //Gl.glMaterialfv(Gl.GL_FRONT, Gl.GL_AMBIENT, new float[] { 0.2f, 0.2f, 0.2f, 1f });*/
 
             for (int i = 0; i < 2; i++) {
 
@@ -338,15 +396,18 @@ namespace Minecraft {
 
                 ItemsSet.TEXTURES[T[i]].Bind();
 
-                Gl.glBegin(Gl.GL_POLYGON);
+                for (int j = 0; j < POLYS[i].MTR.Count; j++) {
 
-                    for (int j = 0; j < MODEL_PTS[i].Count && j < TEX_PTS[i].Count; j++) {
+                    Gl.glBegin(Gl.GL_POLYGON);
 
-                        Gl.glTexCoord2f(TEX_PTS[i][j].DX, TEX_PTS[i][j].DY);
-                        Gl.glVertex3f(MODEL_PTS[i][j].DX, MODEL_PTS[i][j].DY, MODEL_PTS[i][j].DZ);
+                    for (int k = 0; k < POLYS[i].MTR[j].V.Length; k++) {
+
+                        Gl.glTexCoord2f(POLYS[i].TTR[j].V[k].DX, POLYS[i].TTR[j].V[k].DY);
+                        Gl.glVertex3f(POLYS[i].MTR[j].V[k].DX, POLYS[i].MTR[j].V[k].DY, POLYS[i].MTR[j].V[k].DZ);
                     }
 
-                Gl.glEnd();
+                    Gl.glEnd();
+                }
             }
 
             for (int j = 0; j < MODEL_PTS[2].Count / 2 - 1; j++) {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minecraft {
 
-    public class Vector3D : IComparable {
+    public class Vector3D : IComparable, IVector {
 
         public float DX { get; private set; }
         public float DY { get; private set; }
