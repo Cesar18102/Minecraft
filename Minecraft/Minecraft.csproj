@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Block.cs" />
     <Compile Include="BlockInstance.cs" />
+    <Compile Include="Visibility.cs" />
     <Compile Include="ByteParser.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="Chunk.cs" />

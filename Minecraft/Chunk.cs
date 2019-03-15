@@ -64,12 +64,34 @@ namespace Minecraft {
                 Render[i] = new RenderChunk(this, (UInt16)i);
             }*/
 
-            bool[,] UMask = new bool[Constants.CHUNK_X, Constants.CHUNK_X];
-            bool[,] LMask = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];
+            /*bool[,] UMask = new bool[Constants.CHUNK_X, Constants.CHUNK_X];
+            bool[,] LMask = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];*/
 
-            for (int i = 0; i < Constants.CHUNK_Y; UMask = Render[i].UpperMask, LMask = Render[i].LowerMask, i++) {
+            
+        }
 
-                Render[i].LoadChunkVisibility(UMask, LMask);
+        public void LoadVisibility(Chunk CUp, Chunk CDown, Chunk CLeft, Chunk CRight) {
+
+            for (int i = 0; i < Constants.CHUNK_Y; i++)
+                this.Render[i].LoadVisibility(
+                    new RenderChunk[]{
+
+                        i == Constants.CHUNK_Y - 1 ? null : this.Render[i + 1],
+                        CLeft == null ? null : CLeft.Render[i], 
+                        CUp == null ? null : CUp.Render[i], 
+                        CRight == null ? null : CRight.Render[i], 
+                        CDown == null ? null : CDown.Render[i],
+                        i == 0 ? null : this.Render[i - 1]
+                    }
+                );
+        }
+
+        public void GenerateRenderPieces() {
+
+            for (int i = 0; i < Constants.CHUNK_Y; /*UMask = Render[i].UpperMask, LMask = Render[i].LowerMask, */i++)
+            {
+
+                //Render[i].LoadChunkVisibility();
                 Render[i].GenerateRenderPieces();
             }
         }

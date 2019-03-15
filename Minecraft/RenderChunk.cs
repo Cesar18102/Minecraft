@@ -12,12 +12,10 @@ namespace Minecraft {
 
         public BlockInstance[,] Layer = new BlockInstance[Constants.CHUNK_X, Constants.CHUNK_Z];
         public bool[,] Visited = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];
-        public bool[,] UpperMask = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];
-        public bool[,] LowerMask = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];
 
         public List<RenderPiece> Pieces = new List<RenderPiece>();
         public UInt16 H { get; private set; }
-        public Chunk C { get; private set; }
+        private Visibility V = null;
 
         public Int64 PivotX { get; private set; }
         public Int64 PivotZ { get; private set; }
@@ -29,32 +27,15 @@ namespace Minecraft {
             this.PivotX = C.PivotX;
             this.PivotZ = C.PivotZ;
             this.H = H;
-            this.C = C;
             
             for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
                 for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
                     Layer[i, j] = C[i, H, j];
         }
 
-        public void LoadChunkVisibility(bool[,] UMask, bool[,] LMask) {
+        public void LoadVisibility(RenderChunk[] RC) {
 
-            Array.Copy(UMask, UpperMask, UMask.Length);
-            Array.Copy(LMask, LowerMask, LMask.Length);
-
-            Adder Upper = (x, z) => { UpperMask[x, z] = (C[(UInt16)x, (UInt16)(H + 1), (UInt16)z] != null); };
-            if (H >= Constants.CHUNK_Y - 1)
-                Upper = (x, z) => { return; };
-
-            Adder Lower = (x, z) => { LowerMask[x, z] = (C[(UInt16)x, (UInt16)(H - 1), (UInt16)z] != null); };
-            if (H <= 0)
-                Lower = (x, z) => { return; };
-
-            for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
-                for (UInt16 j = 0; j < Constants.CHUNK_Z; j++) {
-
-                    Upper(i, j);
-                    Lower(i, j);
-                }
+            V = new Visibility(this, RC);
         }
 
         public void GenerateRenderPieces() {
@@ -64,7 +45,7 @@ namespace Minecraft {
 
             while (true) {
 
-                for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[X, Z]); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ;
+                for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[X, Z]); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ; // V
 
                 if (X >= Constants.CHUNK_X)
                     break;
@@ -78,31 +59,11 @@ namespace Minecraft {
                 Pieces.Add(RP);
             }
 
-            foreach (RenderPiece P in Pieces) {
-
-                bool TOP_VISIBLE = H == Constants.CHUNK_Y - 1;
-                bool BOT_VISIBLE = H == 0;
-
-                for (int i = 0; i < P.BlocksCount; i++)
-                    if (!UpperMask[P[i].X, P[i].Z]) {
-
-                        TOP_VISIBLE = true;
-                        break;
-                }
-
-                for (int i = 0; i < P.BlocksCount; i++)
-                    if (!LowerMask[P[i].X, P[i].Z]) {
-
-                        BOT_VISIBLE = true;
-                        break;
-                }
-
-                P.SetVisibility(TOP_VISIBLE, BOT_VISIBLE, true);
+            foreach (RenderPiece P in Pieces)
                 P.BlocksAdded();
-            }
         }
 
-        private void PlaneDrawSearch(int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P) {
+        private void PlaneDrawSearch(int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P) { // V
 
             Visited[XS, ZS] = true;
             P.AddBlock(Layer[XS, ZS]);

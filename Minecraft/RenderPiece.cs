@@ -102,8 +102,7 @@ namespace Minecraft {
             BlocksCount = Blocks.Count;
         }
 
-        public void BlocksAdded()
-        {
+        public void BlocksAdded() {
 
             this.W = MaxX - MinX + 1;
             this.H = MaxZ - MinZ + 1;
@@ -116,8 +115,7 @@ namespace Minecraft {
             int XM = this.W;
             int ZM = this.H;
 
-            foreach (BlockInstance B in Blocks)
-            {
+            foreach (BlockInstance B in Blocks) {
 
                 int AbsX = B.X - MinX;
                 int AbsZ = B.Z - MinZ;
@@ -134,8 +132,7 @@ namespace Minecraft {
 
             Blocks = null;
 
-            for (int i = 0; i < 3; i++)
-            {
+            for (int i = 0; i < 3; i++) {
 
                 MODEL_PTS[i] = new List<Vector3D>();
                 TEX_PTS[i] = new List<Vector2D>();

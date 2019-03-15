@@ -37,11 +37,17 @@ namespace Minecraft {
 
             LoadingLogging("Loading World", 0);
 
-            W = new World("Test");
+            W = new World("Test", 9);
+            W.LoadingLogging += W_LoadingLogging;
 
             GLW.Open();
 
             GLW.RenderStart();
+        }
+
+        public void W_LoadingLogging(string message, int layer) {
+
+            LoadingLogging(message, 0);
         }
 
         public async void InitGraphics() {
@@ -56,7 +62,7 @@ namespace Minecraft {
 
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
 
-            await Task.Run(() => GenerateView(0, 0, 3));
+            await Task.Run(() => W.GenerateView(0, 0));
         }
 
         public void Render() {
@@ -71,34 +77,6 @@ namespace Minecraft {
             Gl.glClearColor(255, 255, 255, 0);
             Cursor.Hide();
             W.Draw();
-        }
-
-        public void GenerateChunk(ref int WC, ref int HC, int WMN, int WMX, int HMN, int HMX, int W, int H, World WRLD) {
-
-            if (WC <= WMX && !Constants.GraphicsBusy) {
-
-                LoadingLogging("Generating chunk " + ((WC + WMX) * H + HC + HMX + 1).ToString() + "/" + W * H, 0);
-                Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * WC), Convert.ToInt64(Constants.CHUNK_Z * HC), true);
-                C.CreateTextures();
-                WRLD.AddChunk(C);
-
-                if (HC++ == HMX) { WC++; HC = HMN; }
-            }
-        }
-
-        public void GenerateView(int X, int Z, int RD) {
-
-            int WCur = X - RD / 2;
-            int WMin = X - RD / 2;
-            int WMax = X + RD / 2;
-
-            int HCur = Z - RD / 2;
-            int HMin = Z - RD / 2;
-            int HMax = Z + RD / 2;
-
-            for (int i = 0; i < RD; i++)
-                for(int j = 0; j < RD; j++)
-                    GenerateChunk(ref WCur, ref HCur, WMin, WMax, HMin, HMax, RD, RD, W);
         }
 
         public void Reshape(int w, int h) {
