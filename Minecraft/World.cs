@@ -10,6 +10,10 @@ namespace Minecraft {
 
         private Chunk[,] ChunkBuffer;//do not save
         private bool[,] ChunkDrawBuffer;//do not save
+        private List<List<IntPair>> DrawSequence = new List<List<IntPair>>();
+
+        private int BufH = 0;
+        private int BufW = 0;
 
         public int RendDist { get; private set; }
         public string Name { get; private set; }
@@ -29,60 +33,83 @@ namespace Minecraft {
 
             CID = LastChunkId++;
         }
-
-        /*public Chunk this[UInt64 ID]
-        {
-            get { return Chunk_Buffer[ID]; }
-            //read from file
-        }*/
         
         public World(string name, int RenderDistance) {
 
             this.Name = name;
             this.RendDist = RenderDistance;
-            this.ChunkBuffer = new Chunk[RendDist, RendDist];
-            this.ChunkDrawBuffer = new bool[RendDist, RendDist];
+
+            this.BufH = 2 * RendDist - 1;
+            this.BufW = 2 * RendDist - 1;
+
+            this.ChunkBuffer = new Chunk[BufW, BufH];
+            this.ChunkDrawBuffer = new bool[BufW, BufH];
         }
 
-        public void GenerateChunk(ref int WC, ref int HC, int WMN, int WMX, int HMN, int HMX, int W, int H, int X, int Z) {
+        public void GenerateChunk(IntPair IP) {
 
-            if (WC <= WMX && !Constants.GraphicsBusy) {
+            if (!Constants.GraphicsBusy) {
 
-                LoadingLogging("Generating chunk " + ((WC + WMX) * H + HC + HMX + 1).ToString() + "/" + W * H, 0);
-                Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * WC), Convert.ToInt64(Constants.CHUNK_Z * HC), true);
-                this.AddChunk(C, X, Z);
-
-                if (HC++ == HMX) { WC++; HC = HMN; }
+                //LoadingLogging("Generating chunk " + ((WC + WMX) * H + HC + HMX + 1).ToString() + "/" + W * H, 0);
+                Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * (IP.X - BufW / 2)), Convert.ToInt64(Constants.CHUNK_Z * (IP.Y - BufH / 2)), true);
+                this.AddChunk(C, IP.X, IP.Y);
             }
         }
 
         public void GenerateView(int X, int Z) {
 
-            int WCur = X - RendDist / 2;
-            int WMin = X - RendDist / 2;
-            int WMax = X + RendDist / 2;
+            List<IntPair> P = new List<IntPair>() { new IntPair(RendDist - 1, RendDist - 1) };
 
-            int HCur = Z - RendDist / 2;
-            int HMin = Z - RendDist / 2;
-            int HMax = Z + RendDist / 2;
+            for (int i = 0; i < RendDist; i++) {
 
-            for (int i = 0; i < RendDist; i++)
-                for(int j = 0; j < RendDist; j++)
-                    GenerateChunk(ref WCur, ref HCur, WMin, WMax, HMin, HMax, RendDist, RendDist, i, j);
+                foreach (IntPair IP in P)
+                    GenerateChunk(IP);
 
-            for (int i = 0; i < RendDist; i++)
-                for (int j = 0; j < RendDist; j++) {
+                DrawSequence.Add(P);
+                P = Spread(P);
+            }
 
-                    ChunkBuffer[i, j].LoadVisibility(j == 0 ? null : ChunkBuffer[i, j - 1],
-                                                      j == RendDist - 1 ? null : ChunkBuffer[i, j + 1],
-                                                      i == 0 ? null : ChunkBuffer[i - 1, j],
-                                                      i == RendDist - 1 ? null : ChunkBuffer[i + 1, j]);
 
-                    ChunkBuffer[i, j].GenerateRenderPieces();
-                    ChunkBuffer[i, j].CreateTextures();
-                    ChunkDrawBuffer[i, j] = true;
+            foreach (List<IntPair> LIP in DrawSequence)
+                foreach (IntPair IP in LIP) {
+
+                    if (ChunkBuffer[IP.X, IP.Y] != null) {
+
+                        ChunkBuffer[IP.X, IP.Y].LoadVisibility(IP.Y == 0 ? null : ChunkBuffer[IP.X, IP.Y - 1],
+                                                         IP.Y == BufH - 1 ? null : ChunkBuffer[IP.X, IP.Y + 1],
+                                                         IP.X == 0 ? null : ChunkBuffer[IP.X - 1, IP.Y],
+                                                         IP.X == BufW - 1 ? null : ChunkBuffer[IP.X + 1, IP.Y]);
+
+                        ChunkBuffer[IP.X, IP.Y].GenerateRenderPieces();
+                        ChunkBuffer[IP.X, IP.Y].CreateTextures();
+                        ChunkDrawBuffer[IP.X, IP.Y] = true;
+                    }
                 }
-                    
+        }
+
+        public List<IntPair> Spread(List<IntPair> P) {
+
+            List<IntPair> NextCircle = new List<IntPair>();
+
+            for (int i = 0; i < P.Count; i++) {
+
+                int L = Constants.BlockIDs.GetLength(0);
+                //RANDOM??
+
+                for (int j = 0; j < L; j++) {
+
+                    int NX = P[i].X + Constants.BlockIDs[j, 0];
+                    int NY = P[i].Y + Constants.BlockIDs[j, 1];
+                    IntPair Pair = new IntPair(NX, NY);
+
+                    if (NX >= 0 && NX < ChunkDrawBuffer.GetLength(0) && 
+                        NY >= 0 && NY < ChunkDrawBuffer.GetLength(1) &&
+                        ChunkBuffer[NX, NY] == null && !NextCircle.Contains(Pair))
+                        NextCircle.Add(new IntPair(NX, NY));
+                }
+            }
+
+            return NextCircle;
         }
 
         public void AddChunk(Chunk C, int X, int Z) {
@@ -98,10 +125,13 @@ namespace Minecraft {
 
         public void Draw() {
 
-            for (int i = 0; i < RendDist; i++)
-                for (int j = 0; j < RendDist; j++)
-                    if (ChunkDrawBuffer[i, j] && ChunkBuffer[i, j] != null)
-                        ChunkBuffer[i, j].Draw();
+            lock (DrawSequence) {
+
+                foreach (List<IntPair> LIP in DrawSequence)
+                    foreach (IntPair IP in LIP)
+                        if (ChunkDrawBuffer[IP.X, IP.Y] && ChunkBuffer[IP.X, IP.Y] != null)
+                            ChunkBuffer[IP.X, IP.Y].Draw();
+            }
         }
 
         public void SaveBuffer() {

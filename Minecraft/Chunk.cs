@@ -47,7 +47,7 @@ namespace Minecraft {
                     for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
                         Blocks[i, k, j] = new BlockInstance(1, i, k, j);
 
-                Blocks[0, k, 5] = null;
+                //Blocks[0, k, 5] = null;
                 Render[k] = new RenderChunk(this, k);
             }
 

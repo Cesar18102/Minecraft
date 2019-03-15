@@ -37,7 +37,7 @@ namespace Minecraft {
 
             LoadingLogging("Loading World", 0);
 
-            W = new World("Test", 21);
+            W = new World("Test", Constants.RenderDistance);
             W.LoadingLogging += W_LoadingLogging;
 
             GLW.Open();
