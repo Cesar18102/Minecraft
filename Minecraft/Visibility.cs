@@ -8,16 +8,6 @@ namespace Minecraft {
 
     public class Visibility {
 
-        public enum Planes {
-
-            TOP = 0,
-            LEFT = 1,
-            FRONT = 2,
-            RIGHT = 3,
-            BACK = 4,
-            BOTTOM = 5
-        }
-
         public static int[,] D = new int[6, 3]{
 
             {  0,  1,  0 },

@@ -11,11 +11,26 @@ namespace Minecraft {
     public class RenderChunk {
 
         public BlockInstance[,] Layer = new BlockInstance[Constants.CHUNK_X, Constants.CHUNK_Z];
-        public bool[,] Visited = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];
-
-        public List<RenderPiece> Pieces = new List<RenderPiece>();
-        public UInt16 H { get; private set; }
         private Visibility V = null;
+        public delegate bool SearchPredicate(int x, int z);
+
+        public bool[][,] Visited = new bool[3][,] {
+
+            new bool[Constants.CHUNK_X, Constants.CHUNK_Z],
+            new bool[Constants.CHUNK_X, Constants.CHUNK_Z],
+            new bool[Constants.CHUNK_X, Constants.CHUNK_Z]
+        };
+
+        public List<RenderPiece>[] Pieces = new List<RenderPiece>[3] {
+
+            new List<RenderPiece>(),
+            new List<RenderPiece>(),
+            new List<RenderPiece>(),
+        };
+
+        public SearchPredicate[] SearchConditions = new SearchPredicate[3];
+
+        public UInt16 H { get; private set; }
 
         public Int64 PivotX { get; private set; }
         public Int64 PivotZ { get; private set; }
@@ -36,47 +51,57 @@ namespace Minecraft {
         public void LoadVisibility(RenderChunk[] RC) {
 
             V = new Visibility(this, RC);
+            SearchConditions[0] = (x, z) => V.V[x, z][(int)Constants.Planes.TOP];
+            SearchConditions[1] = (x, z) => V.V[x, z][(int)Constants.Planes.BOTTOM];
+            SearchConditions[2] = (x, z) => true;
         }
 
         public void GenerateRenderPieces() {
 
-            int X = 0;
-            int Z = 0;
+            for (RenderPiece.MODEL_SIDE i = 0; (int)i < 3; i++) {
 
-            while (true) {
+                int X = 0;
+                int Z = 0;
+                int I = Convert.ToInt32(i);
 
-                for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[X, Z]); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ; // V
+                while (true) {
 
-                if (X >= Constants.CHUNK_X)
-                    break;
+                    for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[I][X, Z] || !SearchConditions[I](X, Z)); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ; // V
 
-                double R = Constants.R.NextDouble();
-                double G = Constants.R.NextDouble();
-                double B = Constants.R.NextDouble();
+                    if (X >= Constants.CHUNK_X)
+                        break;
 
-                RenderPiece RP = new RenderPiece(new double[] { R, G, B }, PivotX, PivotZ, H);
-                PlaneDrawSearch(X, Z, new Queue<IntPair>(), RP);
-                Pieces.Add(RP);
+                    double R = Constants.R.NextDouble();
+                    double G = Constants.R.NextDouble();
+                    double B = Constants.R.NextDouble();
+
+                    RenderPiece RP = new RenderPiece(new double[] { R, G, B }, PivotX, PivotZ, H);
+                    PlaneDrawSearch(I, X, Z, new Queue<IntPair>(), RP, SearchConditions[I]);
+                    Pieces[I].Add(RP);
+                }
+
+                foreach (RenderPiece P in Pieces[I])
+                    P.BlocksAdded(i);
             }
-
-            foreach (RenderPiece P in Pieces)
-                P.BlocksAdded();
         }
 
-        private void PlaneDrawSearch(int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P) { // V
+        private void PlaneDrawSearch(int Side, int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P, SearchPredicate AddCond) { // V
 
-            Visited[XS, ZS] = true;
+            Visited[Side][XS, ZS] = true;
             P.AddBlock(Layer[XS, ZS]);
 
             for (int i = 0; i < Constants.BlockIDs.GetLength(0); i++)
                 if (XS + Constants.BlockIDs[i, 0] >= 0 && XS + Constants.BlockIDs[i, 0] < Constants.CHUNK_X &&
                     ZS + Constants.BlockIDs[i, 1] >= 0 && ZS + Constants.BlockIDs[i, 1] < Constants.CHUNK_Z &&
                     Layer[XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]] != null &&
-                    !Visited[XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]]) {
+                    !Visited[Side][XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]]) {
+                        
+                        if (AddCond != null && !AddCond(XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]))
+                            continue;
 
-                    IntPair N = new IntPair(XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]);
-                    if (!ToVisit.Contains(N))
-                        ToVisit.Enqueue(N);
+                        IntPair N = new IntPair(XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]);
+                        if (!ToVisit.Contains(N))
+                            ToVisit.Enqueue(N);
                 }
 
             if (ToVisit.Count == 0)
@@ -84,22 +109,24 @@ namespace Minecraft {
 
             IntPair NEW = ToVisit.Dequeue();
 
-            PlaneDrawSearch(NEW.X, NEW.Y, ToVisit, P);
+            PlaneDrawSearch(Side, NEW.X, NEW.Y, ToVisit, P, AddCond);
         }
 
         public void CreateTextures() {
 
-            foreach (RenderPiece RP in Pieces) {
+            for(int i = 0; i < 3; i++)
+                foreach (RenderPiece RP in Pieces[i]) {
 
-                RP.CreateTextures();
-                RP.Triangulate();
-            }
+                    RP.CreateTextures();
+                    RP.Triangulate();
+                }
         }
 
         public void Draw() {
 
-            for (int i = 0; i < Pieces.Count; i++)
-                this.Pieces[i].Draw();
+            for(int i = 0; i < 3; i++)
+                for (int j = 0; j < Pieces[i].Count; j++)
+                    this.Pieces[i][j].Draw();
         }
     }
 }

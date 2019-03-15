@@ -37,7 +37,7 @@ namespace Minecraft {
 
             LoadingLogging("Loading World", 0);
 
-            W = new World("Test", 9);
+            W = new World("Test", 21);
             W.LoadingLogging += W_LoadingLogging;
 
             GLW.Open();

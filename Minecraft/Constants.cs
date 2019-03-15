@@ -19,7 +19,7 @@ namespace Minecraft {
         public delegate bool StateBounds<T>(T val);
 
         public static UInt16 CHUNK_X = 16;
-        public static UInt16 CHUNK_Y = 64;
+        public static UInt16 CHUNK_Y = 1;
         public static UInt16 CHUNK_Z = 16;
 
         public static int[,] BlockIDs = new int[4, 2] {
@@ -61,5 +61,15 @@ namespace Minecraft {
             Bottom_Left = 6,
             Top_Left = 7
         };
+
+        public enum Planes {
+
+            TOP = 0,
+            LEFT = 1,
+            FRONT = 2,
+            RIGHT = 3,
+            BACK = 4,
+            BOTTOM = 5
+        }
     }
 }
