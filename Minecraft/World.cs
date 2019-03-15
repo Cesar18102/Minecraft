@@ -8,12 +8,13 @@ namespace Minecraft {
 
     public class World {
 
-        private Chunk[,] ChunkBuffer;//do not save
-        private bool[,] ChunkDrawBuffer;//do not save
+        private Chunk[,] ChunkBuffer;
+        private bool[,] ChunkDrawBuffer;
         private List<List<IntPair>> DrawSequence = new List<List<IntPair>>();
 
         private int BufH = 0;
         private int BufW = 0;
+        private int Total = 0;
 
         public int RendDist { get; private set; }
         public string Name { get; private set; }
@@ -41,16 +42,17 @@ namespace Minecraft {
 
             this.BufH = 2 * RendDist - 1;
             this.BufW = 2 * RendDist - 1;
+            this.Total = 2 * RendDist * (RendDist - 1) + 1;
 
             this.ChunkBuffer = new Chunk[BufW, BufH];
             this.ChunkDrawBuffer = new bool[BufW, BufH];
         }
 
-        public void GenerateChunk(IntPair IP) {
+        public void GenerateChunk(IntPair IP, int Num) {
 
             if (!Constants.GraphicsBusy) {
 
-                //LoadingLogging("Generating chunk " + ((WC + WMX) * H + HC + HMX + 1).ToString() + "/" + W * H, 0);
+                LoadingLogging("Generating chunk " + Num.ToString() + "/" + Total, 0);
                 Chunk C = new Chunk(Convert.ToInt64(Constants.CHUNK_X * (IP.X - BufW / 2)), Convert.ToInt64(Constants.CHUNK_Z * (IP.Y - BufH / 2)), true);
                 this.AddChunk(C, IP.X, IP.Y);
             }
@@ -59,11 +61,12 @@ namespace Minecraft {
         public void GenerateView(int X, int Z) {
 
             List<IntPair> P = new List<IntPair>() { new IntPair(RendDist - 1, RendDist - 1) };
+            int Count = 0;
 
             for (int i = 0; i < RendDist; i++) {
 
                 foreach (IntPair IP in P)
-                    GenerateChunk(IP);
+                    GenerateChunk(IP, ++Count);
 
                 DrawSequence.Add(P);
                 P = Spread(P);
@@ -91,10 +94,19 @@ namespace Minecraft {
 
             List<IntPair> NextCircle = new List<IntPair>();
 
-            for (int i = 0; i < P.Count; i++) {
+            int NC = P.Count;
+            bool[] Used = new bool[NC];
+
+            while(NC > 0) {
+
+                int i = Constants.R.Next(0, P.Count);
+
+                if (Used[i]) continue;
+
+                Used[i] = true;
+                NC--;
 
                 int L = Constants.BlockIDs.GetLength(0);
-                //RANDOM??
 
                 for (int j = 0; j < L; j++) {
 

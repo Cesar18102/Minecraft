@@ -19,7 +19,7 @@ namespace Minecraft {
         public delegate bool StateBounds<T>(T val);
 
         public static UInt16 CHUNK_X = 16;
-        public static UInt16 CHUNK_Y = 16;
+        public static UInt16 CHUNK_Y = 64;
         public static UInt16 CHUNK_Z = 16;
 
         public static UInt16 RenderDistance = 11;

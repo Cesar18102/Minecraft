@@ -53,7 +53,8 @@ namespace Minecraft {
             V = new Visibility(this, RC);
             SearchConditions[0] = (x, z) => V.V[x, z][(int)Constants.Planes.TOP];
             SearchConditions[1] = (x, z) => V.V[x, z][(int)Constants.Planes.BOTTOM];
-            SearchConditions[2] = (x, z) => true;
+            SearchConditions[2] = (x, z) => V.V[x, z][(int)Constants.Planes.BACK] || V.V[x, z][(int)Constants.Planes.FRONT] ||
+                                            V.V[x, z][(int)Constants.Planes.LEFT] || V.V[x, z][(int)Constants.Planes.RIGHT];
         }
 
         public void GenerateRenderPieces() {
