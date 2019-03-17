@@ -65,12 +65,43 @@ namespace Minecraft {
                 int Z = 0;
                 int I = Convert.ToInt32(i);
 
+                List<IntPair> IPMap = new List<IntPair>();
+
+                if (i == Constants.MODEL_SIDE.SIDE) {
+
+                    for(int j = 0; j < Constants.CHUNK_X; j++)
+                        for(int k = 0; k < Constants.CHUNK_Z; k++)
+                            if(Layer[j, k] != null && SearchConditions[I](j, k))
+                                IPMap.Add(new IntPair(j, k));
+
+                    IPMap.Sort();
+                }
+
                 while (true) {
 
-                    for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[I][X, Z] || !SearchConditions[I](X, Z)); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ; // V
+                    if (i == Constants.MODEL_SIDE.SIDE) {
 
-                    if (X >= Constants.CHUNK_X)
-                        break;
+                        bool Found = false;
+                        for(int j = 0; j < IPMap.Count; j++)
+                            if (!Visited[I][IPMap[j].X, IPMap[j].Y]) {
+
+                                X = IPMap[j].X;
+                                Z = IPMap[j].Y;
+                                Found = true;
+                                break;
+                            }
+
+                        if (!Found)
+                            break;
+                    }
+                    else
+                    {
+
+                        for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[I][X, Z] || !SearchConditions[I](X, Z)); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ; // V
+
+                        if (X >= Constants.CHUNK_X)
+                            break;
+                    }
 
                     double R = Constants.R.NextDouble();
                     double G = Constants.R.NextDouble();
@@ -78,7 +109,14 @@ namespace Minecraft {
 
                     RenderPiece RP = new RenderPiece(new double[] { R, G, B }, PivotX, PivotZ, H);
                     PlaneDrawSearch(I, X, Z, new Queue<IntPair>(), RP, SearchConditions[I]);
-                    Pieces[I].Add(RP);
+
+                    //if(i == Constants.MODEL_SIDE.SIDE)
+                    //    for (int j = 0; j < RP.BlocksCount; j++)
+                    //        if (!V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.BACK] && !V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.FRONT] &&
+                    //            !V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.LEFT] && !V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.RIGHT])
+                    //            RP.RemoveBlockAt(j);
+
+                   Pieces[I].Add(RP);
                 }
 
                 foreach (RenderPiece P in Pieces[I])

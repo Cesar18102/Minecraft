@@ -71,7 +71,13 @@ namespace Minecraft {
             if (B.Z < MinZ) MinZ = B.Z;
 
             this.BlockSize = B.Size;
-            BlocksCount = Blocks.Count;
+            this.BlocksCount = Blocks.Count;
+        }
+
+        public void RemoveBlockAt(int i) {
+
+            this.Blocks.RemoveAt(i);
+            this.BlocksCount = Blocks.Count;
         }
 
         public void BlocksAdded(Constants.MODEL_SIDE MS, Visibility V) {
@@ -167,7 +173,7 @@ namespace Minecraft {
                 for (; FP < MODEL_PTS.Count && !Visible(PTS_CPV[FP]); FP++) ;
                 int FPR = MODEL_PTS.IndexOf(PTS_CPV[FP]);
 
-                SideVisiblePlanesSearch(MODEL_PTS, FPR, ref MP);
+                SideVisiblePlanesSearch(MODEL_PTS, FPR, new Queue<int>(), ref MP);
 
                 List<Vector3D> NewMP = new List<Vector3D>();
                 List<int> NewTexIds = new List<int>();
@@ -215,7 +221,7 @@ namespace Minecraft {
             }
         }
 
-        private void SideVisiblePlanesSearch(List<Vector3D> MP, int Current, ref List<IntPair> Result) {
+        private void SideVisiblePlanesSearch(List<Vector3D> MP, int Current, Queue<int> ToVisit, ref List<IntPair> Result) {
 
             int Next = (Current + 1) % MODEL_PTS.Count;
             int Prev = Current == 0 ? MODEL_PTS.Count - 1 : Current - 1;
@@ -236,31 +242,33 @@ namespace Minecraft {
                             IntPairVV NP = new IntPairVV(Current, Next);
                             IntPairVV PP = new IntPairVV(Current, Prev);
 
-                            if (!PrevFound && !NextFound && !NextFailed && !Result.Contains(NP) && PS.Contains(MODEL_PTS[Next]) && this.V.V[MinX + j, MinZ + k][q]) {
+                            if (!NextFound && !NextFailed && !Result.Contains(NP) && PS.Contains(MODEL_PTS[Next]) && this.V.V[MinX + j, MinZ + k][q]) {
 
                                 Result.Add(NP);
+                                ToVisit.Enqueue(Next);
                                 NextFound = true;
                             }
 
-                            if (!NextFound && !PrevFound && !PrevFailed && !Result.Contains(PP) && PS.Contains(MODEL_PTS[Prev]) && this.V.V[MinX + j, MinZ + k][q]) {
+                            if (!PrevFound && !PrevFailed && !Result.Contains(PP) && PS.Contains(MODEL_PTS[Prev]) && this.V.V[MinX + j, MinZ + k][q]) {
 
                                 Result.Add(PP);
+                                ToVisit.Enqueue(Prev);
                                 PrevFound = true;
                             }
 
-                            if (NextFound || PrevFound) break;
+                            if (NextFound && PrevFound) break;
                         }
 
-                        if (NextFound || PrevFound) break;
+                        if (NextFound && PrevFound) break;
                     }
 
-                if (NextFound || PrevFound) break;
+                if (NextFound && PrevFound) break;
             }
 
-            if(!NextFound && !PrevFound)
+            if(ToVisit.Count == 0)
                 return;
 
-            SideVisiblePlanesSearch(MP, NextFound? Next : Prev, ref Result);
+            SideVisiblePlanesSearch(MP, ToVisit.Dequeue(), ToVisit, ref Result);
         }
 
         private bool Visible(Vector3D P) {
@@ -301,7 +309,7 @@ namespace Minecraft {
 
                 float TEX_DX = 0;
 
-                for (int i = 0; i < MODEL_PTS.Count / 2; i++) {
+                for (int i = 0; i < MODEL_PTS.Count / 2; i += 2) {
 
                     float D = Math.Max(Math.Abs(MODEL_PTS[i].DX - MODEL_PTS[i + 1].DX), Math.Abs(MODEL_PTS[i].DZ - MODEL_PTS[i + 1].DZ)) / (TotalModelPointsCount * BlockSize.DX) + TEX_DX;
 
@@ -446,11 +454,6 @@ namespace Minecraft {
             return Constants.CornerIDs[Dir, CI];
         }
 
-        private void DrawTOP() {
-
-
-        }
-
         public void Draw()
         {
 
@@ -491,22 +494,22 @@ namespace Minecraft {
             }
             else {
 
-                for (int j = 0; j < MODEL_PTS.Count / 2 - 1; j += 2) {
+                for (int j = 0; j < MODEL_PTS.Count / 2; j += 2) {
 
                     ItemsSet.TEXTURES[T].Bind();
 
                     Gl.glBegin(Gl.GL_POLYGON);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j].DX, TEX_PTS[4 * j].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j].DX, TEX_PTS[2 * j].DY);
                         Gl.glVertex3f(MODEL_PTS[j].DX, MODEL_PTS[j].DY, MODEL_PTS[j].DZ);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j + 1].DX, TEX_PTS[4 * j + 1].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j + 1].DX, TEX_PTS[2 * j + 1].DY);
                         Gl.glVertex3f(MODEL_PTS[j + 1].DX, MODEL_PTS[j + 1].DY, MODEL_PTS[j + 1].DZ);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j + 2].DX, TEX_PTS[4 * j + 2].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j + 2].DX, TEX_PTS[2 * j + 2].DY);
                         Gl.glVertex3f(MODEL_PTS[MODEL_PTS.Count - j - 2].DX, MODEL_PTS[MODEL_PTS.Count - j - 2].DY, MODEL_PTS[MODEL_PTS.Count - j - 2].DZ);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j + 3].DX, TEX_PTS[4 * j + 3].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j + 3].DX, TEX_PTS[2 * j + 3].DY);
                         Gl.glVertex3f(MODEL_PTS[MODEL_PTS.Count - j - 1].DX, MODEL_PTS[MODEL_PTS.Count - j - 1].DY, MODEL_PTS[MODEL_PTS.Count - j - 1].DZ);
 
                     Gl.glEnd();

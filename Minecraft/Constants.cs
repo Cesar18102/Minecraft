@@ -22,7 +22,7 @@ namespace Minecraft {
         public static UInt16 CHUNK_Y = 64;
         public static UInt16 CHUNK_Z = 16;
 
-        public static UInt16 RenderDistance = 14;
+        public static UInt16 RenderDistance = 2;
 
         public static int[,] BlockIDs = new int[4, 2] {
 

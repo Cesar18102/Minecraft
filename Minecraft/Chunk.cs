@@ -47,8 +47,13 @@ namespace Minecraft {
                     for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
                         Blocks[i, k, j] = new BlockInstance(1, i, k, j);
 
-                //Blocks[0, k, 5] = null;
-                //Blocks[0, k, 6] = null;
+                int Count = Constants.R.Next(0, 10);
+
+                for (int q = 0; q < Count; q++)
+                    if(Constants.R.NextDouble() > 0.5)
+                        Blocks[0, k, Constants.R.Next(0, Constants.CHUNK_Z)] = null; 
+                    else
+                        Blocks[Constants.R.Next(0, Constants.CHUNK_Z), k, 0] = null; 
                 
                 Render[k] = new RenderChunk(this, k);
             }
