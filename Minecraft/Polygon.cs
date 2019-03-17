@@ -18,11 +18,9 @@ namespace Minecraft
         public Polygon(IEnumerable<Vector3D> V, IEnumerable<Vector2D> T) {
 
             this.V = V.ToList();
-            this.V.RemoveAt(0);
             this.V.Reverse();
 
             this.T = T.ToList();
-            this.T.RemoveAt(0);
             this.T.Reverse();
 
             this.Visited = new bool[this.V.Count];

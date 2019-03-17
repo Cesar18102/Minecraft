@@ -68,7 +68,7 @@ namespace Minecraft {
             G.Dispose();
 
             Constants.GraphicsBusy = false;
-            //SB.Save(Constants.DataDir + "/Textures/gen" + ++q + ".png");
+            SB.Save(Constants.DataDir + "/Textures/gen" + ++q + ".png");
 
             this.B = SB;
             this.Prime = Prime;

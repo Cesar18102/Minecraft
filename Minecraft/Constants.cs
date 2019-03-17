@@ -19,10 +19,10 @@ namespace Minecraft {
         public delegate bool StateBounds<T>(T val);
 
         public static UInt16 CHUNK_X = 16;
-        public static UInt16 CHUNK_Y = 16;
+        public static UInt16 CHUNK_Y = 64;
         public static UInt16 CHUNK_Z = 16;
 
-        public static UInt16 RenderDistance = 11;
+        public static UInt16 RenderDistance = 2;
 
         public static int[,] BlockIDs = new int[4, 2] {
 
@@ -73,5 +73,28 @@ namespace Minecraft {
             BACK = 4,
             BOTTOM = 5
         }
+
+        public enum MODEL_SIDE : int {
+
+            TOP = 0,
+            BOT = 1,
+            SIDE = 2
+        }
+
+        public static int[,] CornerIDs = new int[4, 4] {
+
+            { 3, 2, 1, 0 },
+            { 0, 3, 2, 1 },
+            { 2, 1, 0, 3 },
+            { 1, 0, 3, 2 }
+        };
+
+        public static int[,] CornerDS = new int[4, 2] {
+
+            {  1,  0  },
+            {  0, -1  },
+            {  0,  1  },
+            { -1,  0  }
+        };
     }
 }

@@ -53,12 +53,13 @@ namespace Minecraft {
             V = new Visibility(this, RC);
             SearchConditions[0] = (x, z) => V.V[x, z][(int)Constants.Planes.TOP];
             SearchConditions[1] = (x, z) => V.V[x, z][(int)Constants.Planes.BOTTOM];
-            SearchConditions[2] = (x, z) => true;
+            SearchConditions[2] = (x, z) => V.V[x, z][(int)Constants.Planes.BACK] || V.V[x, z][(int)Constants.Planes.FRONT] ||
+                                            V.V[x, z][(int)Constants.Planes.LEFT] || V.V[x, z][(int)Constants.Planes.RIGHT];
         }
 
         public void GenerateRenderPieces() {
 
-            for (RenderPiece.MODEL_SIDE i = 0; (int)i < 3; i++) {
+            for (Constants.MODEL_SIDE i = 0; (int)i < 3; i++) {
 
                 int X = 0;
                 int Z = 0;
@@ -81,25 +82,28 @@ namespace Minecraft {
                 }
 
                 foreach (RenderPiece P in Pieces[I])
-                    P.BlocksAdded(i);
+                    P.BlocksAdded(i, this.V);
             }
         }
 
-        private void PlaneDrawSearch(int Side, int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P, SearchPredicate AddCond) { // V
+        private void PlaneDrawSearch(int Side, int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P, SearchPredicate AddCond) { 
 
             Visited[Side][XS, ZS] = true;
             P.AddBlock(Layer[XS, ZS]);
 
-            for (int i = 0; i < Constants.BlockIDs.GetLength(0); i++)
-                if (XS + Constants.BlockIDs[i, 0] >= 0 && XS + Constants.BlockIDs[i, 0] < Constants.CHUNK_X &&
-                    ZS + Constants.BlockIDs[i, 1] >= 0 && ZS + Constants.BlockIDs[i, 1] < Constants.CHUNK_Z &&
-                    Layer[XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]] != null &&
-                    !Visited[Side][XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]]) {
+            int[,] Deltas = Constants.BlockIDs;
+            int L = Deltas.GetLength(0);
+
+            for (int i = 0; i < Deltas.GetLength(0); i++)
+                if (XS + Deltas[i, 0] >= 0 && XS + Deltas[i, 0] < Constants.CHUNK_X &&
+                    ZS + Deltas[i, 1] >= 0 && ZS + Deltas[i, 1] < Constants.CHUNK_Z &&
+                    Layer[XS + Deltas[i, 0], ZS + Deltas[i, 1]] != null &&
+                    !Visited[Side][XS + Deltas[i, 0], ZS + Deltas[i, 1]]) {
                         
-                        if (AddCond != null && !AddCond(XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]))
+                        if (AddCond != null && !AddCond(XS + Deltas[i, 0], ZS + Deltas[i, 1]))
                             continue;
 
-                        IntPair N = new IntPair(XS + Constants.BlockIDs[i, 0], ZS + Constants.BlockIDs[i, 1]);
+                        IntPair N = new IntPair(XS + Deltas[i, 0], ZS + Deltas[i, 1]);
                         if (!ToVisit.Contains(N))
                             ToVisit.Enqueue(N);
                 }
