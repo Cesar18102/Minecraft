@@ -47,7 +47,14 @@ namespace Minecraft {
                     for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
                         Blocks[i, k, j] = new BlockInstance(1, i, k, j);
 
-                //Blocks[0, k, 5] = null;
+                int Count = Constants.R.Next(0, 10);
+
+                for (int q = 0; q < Count; q++)
+                    if(Constants.R.NextDouble() > 0.5)
+                        Blocks[0, k, Constants.R.Next(0, Constants.CHUNK_Z)] = null; 
+                    else
+                        Blocks[Constants.R.Next(0, Constants.CHUNK_Z), k, 0] = null; 
+                
                 Render[k] = new RenderChunk(this, k);
             }
 
@@ -63,11 +70,6 @@ namespace Minecraft {
 
                 Render[i] = new RenderChunk(this, (UInt16)i);
             }*/
-
-            /*bool[,] UMask = new bool[Constants.CHUNK_X, Constants.CHUNK_X];
-            bool[,] LMask = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];*/
-
-            
         }
 
         public void LoadVisibility(Chunk CUp, Chunk CDown, Chunk CLeft, Chunk CRight) {
@@ -88,12 +90,8 @@ namespace Minecraft {
 
         public void GenerateRenderPieces() {
 
-            for (int i = 0; i < Constants.CHUNK_Y; /*UMask = Render[i].UpperMask, LMask = Render[i].LowerMask, */i++)
-            {
-
-                //Render[i].LoadChunkVisibility();
+            for (int i = 0; i < Constants.CHUNK_Y; i++)
                 Render[i].GenerateRenderPieces();
-            }
         }
 
         public void CreateTextures() {

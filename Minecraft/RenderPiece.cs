@@ -38,10 +38,11 @@ namespace Minecraft {
 
         private List<int> SideTexIDs = new List<int>();
         private Constants.Planes PL = Constants.Planes.TOP;
-        private MODEL_SIDE MS = MODEL_SIDE.TOP;
+        private Constants.MODEL_SIDE MS = Constants.MODEL_SIDE.TOP;
 
         private int T = 0; 
         private Polygon POLY = null;
+        private Visibility V = null;
 
         private List<Vector3D> MODEL_PTS = new List<Vector3D>();
         private List<Vector2D> TEX_PTS = new List<Vector2D>();
@@ -50,29 +51,6 @@ namespace Minecraft {
         public int BlocksCount { get; private set; }
 
         private int TotalModelPointsCount = 0;
-
-        public enum MODEL_SIDE : int {
-
-            TOP = 0,
-            BOT = 1,
-            SIDE = 2
-        }
-
-        public int[,] CornerIDs = new int[4, 4] {
-
-            { 3, 2, 1, 0 },
-            { 0, 3, 2, 1 },
-            { 2, 1, 0, 3 },
-            { 1, 0, 3, 2 }
-        };
-
-        public int[,] CornerDS = new int[4, 2] {
-
-            {  1,  0  },
-            {  0, -1  },
-            {  0,  1  },
-            { -1,  0  }
-        };
 
         public RenderPiece(double[] Color, Int64 PivotX, Int64 PivotZ, int PY) {
 
@@ -93,13 +71,20 @@ namespace Minecraft {
             if (B.Z < MinZ) MinZ = B.Z;
 
             this.BlockSize = B.Size;
-            BlocksCount = Blocks.Count;
+            this.BlocksCount = Blocks.Count;
         }
 
-        public void BlocksAdded(MODEL_SIDE MS) {
+        public void RemoveBlockAt(int i) {
 
-            this.PL = MS == MODEL_SIDE.BOT? Constants.Planes.BOTTOM : Constants.Planes.TOP;
+            this.Blocks.RemoveAt(i);
+            this.BlocksCount = Blocks.Count;
+        }
+
+        public void BlocksAdded(Constants.MODEL_SIDE MS, Visibility V) {
+
+            this.PL = MS == Constants.MODEL_SIDE.BOT ? Constants.Planes.BOTTOM : Constants.Planes.TOP;
             this.MS = MS;
+            this.V = V;
 
             this.W = MaxX - MinX + 1;
             this.H = MaxZ - MinZ + 1;
@@ -130,16 +115,21 @@ namespace Minecraft {
 
             Vector3D P0 = GetRealPoints(XM, ZM, XM - 1, ZM, (int)PL)[3];
             int LastTex = BlocksMap[XM, ZM].Planes[1].TEX_ID;
+            List<IntPair> SideTexCorners = new List<IntPair>();
 
             MODEL_PTS.Add(P0);
             PerimeterPointSearch(XM, ZM, XM - 1, ZM, new bool[this.W, this.H, 4], P0, ref MODEL_PTS, ref SideTexIDs, (int)PL);
-            MODEL_PTS.Add(P0);
-            SideTexIDs.Add(LastTex);
+
+            if (MS == Constants.MODEL_SIDE.SIDE) {
+
+                MODEL_PTS.Add(P0);
+                SideTexIDs.Add(LastTex);
+            }
 
             TotalModelPointsCount = MODEL_PTS.Count - 1;
 
             //removing imtermediate points
-            for (int i = 0; i < MODEL_PTS.Count; i++) {
+            for (int i = 0, t = SideTexIDs.Count - 1; i < MODEL_PTS.Count; i++) {
 
                 int CX = 0;
                 int CZ = 0;
@@ -155,20 +145,70 @@ namespace Minecraft {
 
                 int C = Math.Max(CX, CZ) - 1;
 
+                if (MS == Constants.MODEL_SIDE.SIDE) {
+
+                    SideTexCorners.Add(new IntPair(t, (t + 1) % SideTexIDs.Count));
+                    t = (t + C + 1) % SideTexIDs.Count;
+                }
+
                 for (int j = 1; j <= C; j++)
                     MODEL_PTS.RemoveAt(i + 1);
             }
 
             // constructing side 
-            if (MS == MODEL_SIDE.SIDE)
-                for (int i = MODEL_PTS.Count - 1; i >= 0; i--)
-                    MODEL_PTS.Add(GetBottomPoint(MODEL_PTS[i]));
+            if (MS == Constants.MODEL_SIDE.SIDE) {
+
+                TotalModelPointsCount = 0;
+                SideTexCorners.RemoveAt(SideTexCorners.Count - 1);
+                MODEL_PTS.RemoveAt(MODEL_PTS.Count - 1);
+
+                List<IntPair> MP = new List<IntPair>();
+
+                Vector3D[] PTS_CP = new Vector3D[MODEL_PTS.Count];
+                Array.Copy(MODEL_PTS.ToArray(), PTS_CP, PTS_CP.Length);
+                List<Vector3D> PTS_CPV = PTS_CP.ToList();
+                PTS_CPV.Sort();
+
+                int FP = 0;
+                for (; FP < MODEL_PTS.Count && !Visible(PTS_CPV[FP]); FP++) ;
+                int FPR = MODEL_PTS.IndexOf(PTS_CPV[FP]);
+
+                SideVisiblePlanesSearch(MODEL_PTS, FPR, new Queue<int>(), ref MP);
+
+                List<Vector3D> NewMP = new List<Vector3D>();
+                List<int> NewTexIds = new List<int>();
+
+                for (int i = 0; i < MP.Count; i++) {
+
+                    NewMP.Add(MODEL_PTS[MP[i].X]);
+                    NewMP.Add(MODEL_PTS[MP[i].Y]);
+
+                    int SID = MP[i].X == 0 && MP[i].Y == MODEL_PTS.Count - 1 ? MODEL_PTS.Count : MP[i].X;
+                    int EID = MP[i].Y == 0 && MP[i].X == MODEL_PTS.Count - 1 ? MODEL_PTS.Count : MP[i].Y;
+
+                    int D = EID - SID;
+
+                    int SideTexIdStart = D > 0 ? SideTexCorners[MP[i].X].Y : SideTexCorners[MP[i].X].X;
+                    int SideTexIdEnd = D > 0 ? SideTexCorners[MP[i].Y].X : SideTexCorners[MP[i].Y].Y;
+                    int Delta = SideTexIdStart < SideTexIdEnd ? 1 : -1;
+                    TotalModelPointsCount += Math.Abs(SideTexIdEnd - SideTexIdStart) + 1;
+
+                    for (int j = SideTexIdStart; j != SideTexIdEnd + Delta; j += Delta)
+                        NewTexIds.Add(SideTexIDs[j]);
+                }
+
+                for (int i = NewMP.Count - 1; i >= 0; i--)
+                    NewMP.Add(GetBottomPoint(NewMP[i]));
+
+                MODEL_PTS = NewMP;
+                SideTexIDs = NewTexIds;
+            }
 
             float DX = (PivotX + MinX) * BlockSize.DX;
             float DZ = (PivotZ + MinZ) * BlockSize.DZ;
 
             // constructing texture points
-            if (MS == MODEL_SIDE.BOT || MS == MODEL_SIDE.TOP) {
+            if (MS == Constants.MODEL_SIDE.BOT || MS == Constants.MODEL_SIDE.TOP) {
 
                 for (int i = 0; i < MODEL_PTS.Count; i++) {
 
@@ -181,11 +221,77 @@ namespace Minecraft {
             }
         }
 
+        private void SideVisiblePlanesSearch(List<Vector3D> MP, int Current, Queue<int> ToVisit, ref List<IntPair> Result) {
+
+            int Next = (Current + 1) % MODEL_PTS.Count;
+            int Prev = Current == 0 ? MODEL_PTS.Count - 1 : Current - 1;
+
+            bool NextFound = false;
+            bool PrevFound = false;
+
+            bool NextFailed = MODEL_PTS[Current].Equals(MODEL_PTS[Next]);
+            bool PrevFailed = MODEL_PTS[Current].Equals(MODEL_PTS[Prev]);
+
+            for (int j = 0; j < W; j++) {
+                for (int k = 0; k < H; k++)
+                    if (BlocksMap[j, k] != null) {
+                        for (int q = 1; q < 5; q++) {
+
+                            List<Vector3D> PS = GetRealPoints(j, k, j - 1, k, q);
+
+                            IntPairVV NP = new IntPairVV(Current, Next);
+                            IntPairVV PP = new IntPairVV(Current, Prev);
+
+                            if (!NextFound && !NextFailed && !Result.Contains(NP) && PS.Contains(MODEL_PTS[Next]) && this.V.V[MinX + j, MinZ + k][q]) {
+
+                                Result.Add(NP);
+                                ToVisit.Enqueue(Next);
+                                NextFound = true;
+                            }
+
+                            if (!PrevFound && !PrevFailed && !Result.Contains(PP) && PS.Contains(MODEL_PTS[Prev]) && this.V.V[MinX + j, MinZ + k][q]) {
+
+                                Result.Add(PP);
+                                ToVisit.Enqueue(Prev);
+                                PrevFound = true;
+                            }
+
+                            if (NextFound && PrevFound) break;
+                        }
+
+                        if (NextFound && PrevFound) break;
+                    }
+
+                if (NextFound && PrevFound) break;
+            }
+
+            if(ToVisit.Count == 0)
+                return;
+
+            SideVisiblePlanesSearch(MP, ToVisit.Dequeue(), ToVisit, ref Result);
+        }
+
+        private bool Visible(Vector3D P) {
+
+            for (int j = 0; j < W; j++)
+                for (int k = 0; k < H; k++)
+                    if (BlocksMap[j, k] != null)
+                        for (int q = 1; q < 5; q++) {
+
+                            List<Vector3D> PS = GetRealPoints(j, k, j - 1, k, q);
+
+                            if (PS.Contains(P) && this.V.V[MinX + j, MinZ + k][q])
+                                return true;
+                        }
+
+            return false;
+        }
+
         public void CreateTextures() {
 
             Dictionary<IntPair, int> TEX = new Dictionary<IntPair, int>();
 
-            if (MS == MODEL_SIDE.BOT || MS == MODEL_SIDE.TOP) {
+            if (MS == Constants.MODEL_SIDE.BOT || MS == Constants.MODEL_SIDE.TOP) {
 
                 for (int i = 0; i < this.W; i++)
                     for (int j = 0; j < this.H; j++)
@@ -203,7 +309,7 @@ namespace Minecraft {
 
                 float TEX_DX = 0;
 
-                for (int i = 0; i < MODEL_PTS.Count / 2; i++) {
+                for (int i = 0; i < MODEL_PTS.Count / 2; i += 2) {
 
                     float D = Math.Max(Math.Abs(MODEL_PTS[i].DX - MODEL_PTS[i + 1].DX), Math.Abs(MODEL_PTS[i].DZ - MODEL_PTS[i + 1].DZ)) / (TotalModelPointsCount * BlockSize.DX) + TEX_DX;
 
@@ -219,7 +325,7 @@ namespace Minecraft {
 
         public void Triangulate() {
 
-            if (MS == MODEL_SIDE.SIDE)
+            if (MS == Constants.MODEL_SIDE.SIDE)
                 return;
 
             POLY = new Polygon(MODEL_PTS, TEX_PTS);
@@ -250,6 +356,7 @@ namespace Minecraft {
                     if (NX >= 0 && NX < W && NZ >= 0 && NZ < H && this.BlocksMap[NX, NZ] != null) {
 
                         List<Vector3D> NP = GetRealPoints(NX, NZ, X, Z, PlaneID);
+
                         if (NP.Contains(LastPoint) && NP.Contains(P[i])) {
 
                             Outer = false;
@@ -321,12 +428,12 @@ namespace Minecraft {
             List<Vector3D> RP = new List<Vector3D>();
 
             int Dir = 0;
-            for (; Dir < CornerDS.GetLength(0) && (CornerDS[Dir, 0] != X - OX || CornerDS[Dir, 1] != Z - OZ); Dir++) ;
+            for (; Dir < Constants.CornerDS.GetLength(0) && (Constants.CornerDS[Dir, 0] != X - OX || Constants.CornerDS[Dir, 1] != Z - OZ); Dir++) ;
 
-            for (int i = 0; i < CornerIDs.GetLength(1); i++)
-                RP.Add(new Vector3D(PTS_Ratio[PTS_IDs[CornerIDs[Dir, i]]].DX + (PivotX + MinX + X + 0.5f) * SZ.DX, 
-                                    PTS_Ratio[PTS_IDs[CornerIDs[Dir, i]]].DY + (PY - 0.5f) * SZ.DY, 
-                                    PTS_Ratio[PTS_IDs[CornerIDs[Dir, i]]].DZ + (PivotZ + MinZ + Z + 0.5f) * SZ.DZ));
+            for (int i = 0; i < Constants.CornerIDs.GetLength(1); i++)
+                RP.Add(new Vector3D(PTS_Ratio[PTS_IDs[Constants.CornerIDs[Dir, i]]].DX + (PivotX + MinX + X + 0.5f) * SZ.DX,
+                                    PTS_Ratio[PTS_IDs[Constants.CornerIDs[Dir, i]]].DY + (PY - 0.5f) * SZ.DY,
+                                    PTS_Ratio[PTS_IDs[Constants.CornerIDs[Dir, i]]].DZ + (PivotZ + MinZ + Z + 0.5f) * SZ.DZ));
 
             if (PlaneID == (int)Constants.Planes.BOTTOM)
                 RP.Reverse();
@@ -342,14 +449,9 @@ namespace Minecraft {
         private int GetAbsCornerID(int X, int Z, int OX, int OZ, int CI) {
 
             int Dir = 0;
-            for (; Dir < CornerDS.GetLength(0) && (CornerDS[Dir, 0] != X - OX || CornerDS[Dir, 1] != Z - OZ); Dir++) ;
+            for (; Dir < Constants.CornerDS.GetLength(0) && (Constants.CornerDS[Dir, 0] != X - OX || Constants.CornerDS[Dir, 1] != Z - OZ); Dir++) ;
 
-            return this.CornerIDs[Dir, CI];
-        }
-
-        private void DrawTOP() {
-
-
+            return Constants.CornerIDs[Dir, CI];
         }
 
         public void Draw()
@@ -372,7 +474,7 @@ namespace Minecraft {
             //Gl.glMaterialfv(Gl.GL_FRONT, Gl.GL_SPECULAR, new float[] { 0.5f, 0.5f, 0.5f, 1f });
             //Gl.glMaterialfv(Gl.GL_FRONT, Gl.GL_AMBIENT, new float[] { 0.2f, 0.2f, 0.2f, 1f });*/
 
-            if (MS == MODEL_SIDE.TOP || MS == MODEL_SIDE.BOT) {
+            if (MS == Constants.MODEL_SIDE.TOP || MS == Constants.MODEL_SIDE.BOT) {
 
                 ItemsSet.TEXTURES[T].Bind();
 
@@ -392,22 +494,22 @@ namespace Minecraft {
             }
             else {
 
-                for (int j = 0; j < MODEL_PTS.Count / 2 - 1; j++) {
+                for (int j = 0; j < MODEL_PTS.Count / 2; j += 2) {
 
                     ItemsSet.TEXTURES[T].Bind();
 
                     Gl.glBegin(Gl.GL_POLYGON);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j].DX, TEX_PTS[4 * j].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j].DX, TEX_PTS[2 * j].DY);
                         Gl.glVertex3f(MODEL_PTS[j].DX, MODEL_PTS[j].DY, MODEL_PTS[j].DZ);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j + 1].DX, TEX_PTS[4 * j + 1].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j + 1].DX, TEX_PTS[2 * j + 1].DY);
                         Gl.glVertex3f(MODEL_PTS[j + 1].DX, MODEL_PTS[j + 1].DY, MODEL_PTS[j + 1].DZ);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j + 2].DX, TEX_PTS[4 * j + 2].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j + 2].DX, TEX_PTS[2 * j + 2].DY);
                         Gl.glVertex3f(MODEL_PTS[MODEL_PTS.Count - j - 2].DX, MODEL_PTS[MODEL_PTS.Count - j - 2].DY, MODEL_PTS[MODEL_PTS.Count - j - 2].DZ);
 
-                        Gl.glTexCoord2f(TEX_PTS[4 * j + 3].DX, TEX_PTS[4 * j + 3].DY);
+                        Gl.glTexCoord2f(TEX_PTS[2 * j + 3].DX, TEX_PTS[2 * j + 3].DY);
                         Gl.glVertex3f(MODEL_PTS[MODEL_PTS.Count - j - 1].DX, MODEL_PTS[MODEL_PTS.Count - j - 1].DY, MODEL_PTS[MODEL_PTS.Count - j - 1].DZ);
 
                     Gl.glEnd();

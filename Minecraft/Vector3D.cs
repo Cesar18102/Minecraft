@@ -69,19 +69,7 @@ namespace Minecraft {
 
             Vector3D V = obj as Vector3D;
 
-            if (V.DZ < this.DZ)
-                return 1;
-
-            if (V.DZ > this.DZ)
-                return -1;
-
-            if (V.DX < this.DX)
-                return -1;
-
-            if (V.DX > this.DX)
-                return 1;
-
-            return 0;
+            return this.Length > V.Length ? 1 : (this.Length < V.Length ? -1 : 0);
         }
     }
 }
