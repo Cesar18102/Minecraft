@@ -246,14 +246,14 @@ namespace Minecraft.Rendering {
                             IntPairVV NP = new IntPairVV(Current, Next);
                             IntPairVV PP = new IntPairVV(Current, Prev);
 
-                            if (!NextFound && !NextFailed && !Result.Contains(NP) && PS.Contains(MODEL_PTS[Next]) && this.V.V[MinX + j, MinZ + k][q]) {
+                            if (!NextFound && !NextFailed && !Result.Contains(NP) && PS.Contains(MODEL_PTS[Next]) && this.V[MinX + j, MinZ + k, q]) {
 
                                 Result.Add(NP);
                                 ToVisit.Enqueue(Next);
                                 NextFound = true;
                             }
 
-                            if (!PrevFound && !PrevFailed && !Result.Contains(PP) && PS.Contains(MODEL_PTS[Prev]) && this.V.V[MinX + j, MinZ + k][q]) {
+                            if (!PrevFound && !PrevFailed && !Result.Contains(PP) && PS.Contains(MODEL_PTS[Prev]) && this.V[MinX + j, MinZ + k, q]) {
 
                                 Result.Add(PP);
                                 ToVisit.Enqueue(Prev);
@@ -284,7 +284,7 @@ namespace Minecraft.Rendering {
 
                             List<Vector3D> PS = GetRealPoints(j, k, j - 1, k, q);
 
-                            if (PS.Contains(P) && this.V.V[MinX + j, MinZ + k][q])
+                            if (PS.Contains(P) && this.V[MinX + j, MinZ + k, q])
                                 return true;
                         }
 

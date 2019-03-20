@@ -26,11 +26,16 @@ namespace Minecraft.Structure {
                                                               Constants.CHUNK_Z];
 
         private RenderChunk[] Render = new RenderChunk[Constants.CHUNK_Y];
+        private Chunk[] Neighbours = new Chunk[4];
 
         public BlockInstance this[UInt16 x, UInt16 y, UInt16 z] {
  
             get { return Blocks[x, y, z]; }
-            set { Blocks[x, y, z] = value; }
+        }
+
+        public RenderChunk this[int H] {
+
+            get { return H >= 0 && H < Render.Length ? Render[H] : null; }
         }
 
         public Chunk(Int64 PivotX, Int64 PivotZ, bool Generate) {
@@ -61,6 +66,8 @@ namespace Minecraft.Structure {
                                                       RdZ < Constants.ShortRenderDistance) ? 
                                                         true : 
                                                         k >= Constants.DYRender * ((int)Math.Sqrt(RdX * RdX + RdZ + RdZ) - Constants.ShortRenderDistance));
+
+                Render[k].BlockDestroyed += Chunk_BlockDestroyed;
             }
 
             /*for (Int16 i = (Int16)(Constants.CHUNK_Y - 1); i >= 0; i--) {
@@ -77,7 +84,45 @@ namespace Minecraft.Structure {
             }*/
         }
 
+        private void Chunk_BlockDestroyed(int x, int z, int h) {
+
+            if (h != 0 && Render[h - 1][x, z] != null) Render[h - 1].V[x, z, Constants.Planes.TOP] = true;
+            if (h != Constants.CHUNK_Y - 1 && Render[Constants.CHUNK_Y - 1][x, z] != null) Render[h + 1].V[x, z, Constants.Planes.BOTTOM] = true;
+
+            int L = Constants.BlockIDs.GetLength(0);
+            for (int i = 0; i < L; i++) {
+
+                int NX = x + Constants.BlockIDs[i, 0];
+                int NZ = z + Constants.BlockIDs[i, 1];
+
+                if (NX >= 0 && NX < Constants.CHUNK_X && NZ >= 0 && NZ < Constants.CHUNK_Z) {
+
+                    if (Render[h][NX, NZ] != null)
+                        Render[h].V[NX, NZ, Constants.BlockPlaneIDsBack[i]] = true;
+                }
+                else {
+
+                    int NID = Constants.BlockToChunkIDs[i];
+                    int PID = Constants.BlockPlaneIDsBack[i];
+                    int NNX = Constants.LoopOverflow(NX, Constants.CHUNK_X);
+                    int NNZ = Constants.LoopOverflow(NZ, Constants.CHUNK_Z);
+
+                    if (Neighbours[NID] != null && Neighbours[NID][h][NNX, NNZ] != null)
+                    {
+
+                        Neighbours[NID].Render[h].V[NNX, NNZ, PID] = true;
+                        Neighbours[NID].Render[h].Rebuild();
+                    }
+                }
+            }
+        }
+
         public void LoadVisibility(Chunk CUp, Chunk CDown, Chunk CLeft, Chunk CRight) {
+
+            this.Neighbours[0] = CUp;
+            this.Neighbours[1] = CDown;
+            this.Neighbours[2] = CLeft;
+            this.Neighbours[3] = CRight;
 
             for (int i = 0; i < Constants.CHUNK_Y; i++)
                 this.Render[i].LoadVisibility(

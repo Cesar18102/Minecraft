@@ -23,7 +23,7 @@ namespace Minecraft.Data {
         public static UInt16 CHUNK_Z = 16;
 
         public static UInt16 RenderDistance = 3;
-        public static UInt16 ShortRenderDistance = 2;
+        public static UInt16 ShortRenderDistance = 1;
         public static UInt16 DYRender = (UInt16)(CHUNK_Y / (RenderDistance - ShortRenderDistance));
 
         public static int[,] BlockIDs = new int[4, 2] {
@@ -36,11 +36,40 @@ namespace Minecraft.Data {
 
         public enum BlockIDsIDs : int {
 
-            Bottom = 0,
-            Right = 1,
-            Top = 2,
-            Left = 3
+            BOTTOM = 0,
+            RIGHT = 1,
+            TOP = 2,
+            LEFT = 3
         };
+
+        public static int[] BlockPlaneIDs = new int[4] { 
+
+            (int)Planes.FRONT, 
+            (int)Planes.RIGHT,
+            (int)Planes.BACK,
+            (int)Planes.LEFT
+        };
+
+        public static int[] BlockPlaneIDsBack = new int[4] { 
+
+            (int)Planes.FRONT,
+            (int)Planes.LEFT,
+            (int)Planes.BACK,
+            (int)Planes.RIGHT
+        };
+
+        public static int[] BlockToChunkIDs = new int[4] {
+
+            (int)Chunks.DOWN,
+            (int)Chunks.RIGHT,
+            (int)Chunks.UP,
+            (int)Chunks.LEFT
+        };
+
+        public static int LoopOverflow(int X, int Max) {
+
+            return X < 0 ? Max - 1 : (X >= Max ? 0 : X);
+        }
 
         public static int[,] FullBlockIDs = new int[8, 2] {
 
@@ -56,17 +85,27 @@ namespace Minecraft.Data {
 
         public enum FullBlockIDsIDs : int {
 
-            Bottom = 0,
-            Right = 1,
-            Top = 2,
-            Left = 3,
-            Bottom_Right = 4,
-            Top_Right = 5,
-            Bottom_Left = 6,
-            Top_Left = 7
+            BOTTOM = 0,
+            RIGHT = 1,
+            TOP = 2,
+            LEFT = 3,
+            BOTTOM_RIGTH = 4,
+            TOP_RIGHT = 5,
+            BOTTOM_LEFT = 6,
+            TOP_LEFT = 7
         };
 
-        public enum Planes {
+        public static int[,] DeltaPlane = new int[6, 3]{
+
+            {  0,  1,  0 },
+            { -1,  0,  0 },
+            {  0,  0, -1 },
+            {  1,  0,  0 },
+            {  0,  0,  1 },
+            {  0, -1,  0 }
+        };
+
+        public enum Planes : int {
 
             TOP = 0,
             LEFT = 1,
@@ -74,6 +113,22 @@ namespace Minecraft.Data {
             RIGHT = 3,
             BACK = 4,
             BOTTOM = 5
+        }
+
+        public static int[,] ChunkIDs = new int[4, 2] {
+
+            {  0, -1 },
+            {  0,  1 },
+            { -1,  0 },
+            {  1,  0 }
+        };
+
+        public enum Chunks : int {
+
+            UP = 0,
+            DOWN = 1,
+            LEFT = 2,
+            RIGHT = 3
         }
 
         public enum MODEL_SIDE : int {

@@ -23,6 +23,8 @@ namespace Minecraft {
         public static World W;
         private Vector2D Mouse = null;
 
+        private static int h = Constants.CHUNK_Y - 1;
+
         public static bool SHIFT = false;
 
         public delegate void LoadingLog(string message, int layer);
@@ -182,6 +184,18 @@ namespace Minecraft {
                     CAM.Target = new Vector3D(CAM.Target.DX, CAM.Target.DY - 0.1f, CAM.Target.DZ);
 
                     break;
+
+                case 67:
+                case 99:
+
+                    if (h >= 0)
+                    {
+                        W[2, 2][h].DestroyBlock(0, 0);
+                        W[2, 2][h].DestroyBlock(1, 0);
+                        W[2, 2][h--].Rebuild();
+                        //W[2, 2][h--].DestroyBlock(0, 1);*/
+                    }
+                break;
             }
         }
 

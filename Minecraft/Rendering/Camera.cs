@@ -27,7 +27,7 @@ namespace Minecraft.Rendering {
 
         public void Rotate(float DAXZ, float DAY) {
 
-            if ((AZY + DAY) % (Math.PI * 2) < -1.5 || (AZY + DAY) % (Math.PI * 2) > 1.3)
+            if ((AZY + DAY) % (Math.PI * 2) < -1.55 || (AZY + DAY) % (Math.PI * 2) > 1.35)
                 return;
 
             AXZ = (float)((AXZ + DAXZ) % (Math.PI * 2));

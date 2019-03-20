@@ -81,9 +81,9 @@ namespace Minecraft.Structure {
                     if (ChunkBuffer[IP.X, IP.Y] != null) {
 
                         ChunkBuffer[IP.X, IP.Y].LoadVisibility(IP.Y == 0 ? null : ChunkBuffer[IP.X, IP.Y - 1],
-                                                         IP.Y == BufH - 1 ? null : ChunkBuffer[IP.X, IP.Y + 1],
-                                                         IP.X == 0 ? null : ChunkBuffer[IP.X - 1, IP.Y],
-                                                         IP.X == BufW - 1 ? null : ChunkBuffer[IP.X + 1, IP.Y]);
+                                                               IP.Y == BufH - 1 ? null : ChunkBuffer[IP.X, IP.Y + 1],
+                                                               IP.X == 0 ? null : ChunkBuffer[IP.X - 1, IP.Y],
+                                                               IP.X == BufW - 1 ? null : ChunkBuffer[IP.X + 1, IP.Y]);
 
                         ChunkBuffer[IP.X, IP.Y].GenerateRenderPieces();
                         ChunkBuffer[IP.X, IP.Y].CreateTextures();

@@ -13,34 +13,35 @@ namespace Minecraft.Rendering {
 
     public class RenderChunk {
 
-        public BlockInstance[,] Layer = new BlockInstance[Constants.CHUNK_X, Constants.CHUNK_Z];
-        private Visibility V = null;
-        public bool Visible = true;
+        private delegate bool SearchPredicate(int x, int z);
+        private delegate void Adder(int x, int z);
 
-        public delegate bool SearchPredicate(int x, int z);
+        public delegate void BlockDestroy(int x, int z, int h);
+        public event BlockDestroy BlockDestroyed;
 
-        public bool[][,] Visited = new bool[3][,] {
+        private BlockInstance[,] Layer = new BlockInstance[Constants.CHUNK_X, Constants.CHUNK_Z];
 
-            new bool[Constants.CHUNK_X, Constants.CHUNK_Z],
-            new bool[Constants.CHUNK_X, Constants.CHUNK_Z],
-            new bool[Constants.CHUNK_X, Constants.CHUNK_Z]
-        };
-
-        public List<RenderPiece>[] Pieces = new List<RenderPiece>[3] {
-
-            new List<RenderPiece>(),
-            new List<RenderPiece>(),
-            new List<RenderPiece>(),
-        };
-
-        public SearchPredicate[] SearchConditions = new SearchPredicate[3];
-
-        public UInt16 H { get; private set; }
+        public bool Visible { get; private set; }
+        public Visibility V { get; private set; }
 
         public Int64 PivotX { get; private set; }
         public Int64 PivotZ { get; private set; }
 
-        private delegate void Adder(int x, int z);
+        public UInt16 H { get; private set; }
+
+        public BlockInstance this[int X, int Z] {
+
+            get { return X >= 0 && X < Constants.CHUNK_X && Z >= 0 && Z < Constants.CHUNK_Z ? Layer[X, Z] : null; }
+        }
+
+        private List<RenderPiece>[] Pieces = new List<RenderPiece>[3] {
+
+            new List<RenderPiece>(),
+            new List<RenderPiece>(),
+            new List<RenderPiece>(),
+        };
+
+        private SearchPredicate[] SearchConditions = new SearchPredicate[3];
 
         public RenderChunk(Chunk C, UInt16 H, bool Visible) {
 
@@ -54,13 +55,33 @@ namespace Minecraft.Rendering {
                     Layer[i, j] = C[i, H, j];
         }
 
+        public void Rebuild() {
+
+            for (int i = 0; i < 3; i++)
+                this.Pieces[i].Clear();
+
+            GenerateRenderPieces();
+            CreateTextures();
+        }
+
+        public void DestroyBlock(UInt16 X, UInt16 Z) {
+
+            Layer[X, Z] = null;
+
+            for (int i = 0; i < 6; i++)
+                V[X, Z, i] = false;
+
+            if (this.BlockDestroyed != null)
+                BlockDestroyed(X, Z, H);
+        }
+
         public void LoadVisibility(RenderChunk[] RC) {
 
             V = new Visibility(this, RC);
-            SearchConditions[0] = (x, z) => V.V[x, z][(int)Constants.Planes.TOP];
-            SearchConditions[1] = (x, z) => V.V[x, z][(int)Constants.Planes.BOTTOM];
-            SearchConditions[2] = (x, z) => V.V[x, z][(int)Constants.Planes.BACK] || V.V[x, z][(int)Constants.Planes.FRONT] ||
-                                            V.V[x, z][(int)Constants.Planes.LEFT] || V.V[x, z][(int)Constants.Planes.RIGHT];
+            SearchConditions[0] = (x, z) => V[x, z, Constants.Planes.TOP];
+            SearchConditions[1] = (x, z) => V[x, z, Constants.Planes.BOTTOM];
+            SearchConditions[2] = (x, z) => V[x, z, Constants.Planes.BACK] || V[x, z, Constants.Planes.FRONT] ||
+                                            V[x, z, Constants.Planes.LEFT] || V[x, z, Constants.Planes.RIGHT];
         }
 
         public void GenerateRenderPieces() {
@@ -70,6 +91,7 @@ namespace Minecraft.Rendering {
                 int X = 0;
                 int Z = 0;
                 int I = Convert.ToInt32(i);
+                bool[,] Visited = new bool[Constants.CHUNK_X, Constants.CHUNK_Z];
 
                 List<IntPair> IPMap = new List<IntPair>();
 
@@ -89,7 +111,7 @@ namespace Minecraft.Rendering {
 
                         bool Found = false;
                         for(int j = 0; j < IPMap.Count; j++)
-                            if (!Visited[I][IPMap[j].X, IPMap[j].Y]) {
+                            if (!Visited[IPMap[j].X, IPMap[j].Y]) {
 
                                 X = IPMap[j].X;
                                 Z = IPMap[j].Y;
@@ -100,10 +122,9 @@ namespace Minecraft.Rendering {
                         if (!Found)
                             break;
                     }
-                    else
-                    {
+                    else {
 
-                        for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[I][X, Z] || !SearchConditions[I](X, Z)); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ; // V
+                        for (; X < Constants.CHUNK_X && (Layer[X, Z] == null || Visited[X, Z] || !SearchConditions[I](X, Z)); Z++, X += (UInt16)(Z / Constants.CHUNK_Z), Z %= Constants.CHUNK_Z) ; // V
 
                         if (X >= Constants.CHUNK_X)
                             break;
@@ -114,7 +135,7 @@ namespace Minecraft.Rendering {
                     double B = Constants.R.NextDouble();
 
                     RenderPiece RP = new RenderPiece(new double[] { R, G, B }, PivotX, PivotZ, H);
-                    PlaneDrawSearch(I, X, Z, new Queue<IntPair>(), RP, SearchConditions[I]);
+                    PlaneDrawSearch(X, Z, ref Visited, new Queue<IntPair>(), RP, SearchConditions[I]);
                     Pieces[I].Add(RP);
                 }
 
@@ -123,9 +144,9 @@ namespace Minecraft.Rendering {
             }
         }
 
-        private void PlaneDrawSearch(int Side, int XS, int ZS, Queue<IntPair> ToVisit, RenderPiece P, SearchPredicate AddCond) { 
+        private void PlaneDrawSearch(int XS, int ZS, ref bool[,] Visited, Queue<IntPair> ToVisit, RenderPiece P, SearchPredicate AddCond) { 
 
-            Visited[Side][XS, ZS] = true;
+            Visited[XS, ZS] = true;
             P.AddBlock(Layer[XS, ZS]);
 
             int[,] Deltas = Constants.BlockIDs;
@@ -135,7 +156,7 @@ namespace Minecraft.Rendering {
                 if (XS + Deltas[i, 0] >= 0 && XS + Deltas[i, 0] < Constants.CHUNK_X &&
                     ZS + Deltas[i, 1] >= 0 && ZS + Deltas[i, 1] < Constants.CHUNK_Z &&
                     Layer[XS + Deltas[i, 0], ZS + Deltas[i, 1]] != null &&
-                    !Visited[Side][XS + Deltas[i, 0], ZS + Deltas[i, 1]]) {
+                    !Visited[XS + Deltas[i, 0], ZS + Deltas[i, 1]]) {
                         
                         if (AddCond != null && !AddCond(XS + Deltas[i, 0], ZS + Deltas[i, 1]))
                             continue;
@@ -150,7 +171,7 @@ namespace Minecraft.Rendering {
 
             IntPair NEW = ToVisit.Dequeue();
 
-            PlaneDrawSearch(Side, NEW.X, NEW.Y, ToVisit, P, AddCond);
+            PlaneDrawSearch(NEW.X, NEW.Y, ref Visited, ToVisit, P, AddCond);
         }
 
         public void CreateTextures() {
