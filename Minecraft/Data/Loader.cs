@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 using System.Drawing;
+using Minecraft.Items;
 
-namespace Minecraft {
+namespace Minecraft.Data {
 
     public class MissingDataException : Exception {
 

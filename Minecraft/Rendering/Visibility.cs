@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Minecraft.Data;
 
-namespace Minecraft {
+namespace Minecraft.Rendering {
 
     public class Visibility {
 

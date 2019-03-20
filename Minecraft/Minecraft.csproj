@@ -52,40 +52,40 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Block.cs" />
-    <Compile Include="BlockInstance.cs" />
-    <Compile Include="IntPairVV.cs" />
-    <Compile Include="Visibility.cs" />
-    <Compile Include="ByteParser.cs" />
-    <Compile Include="Camera.cs" />
-    <Compile Include="Chunk.cs" />
-    <Compile Include="Constants.cs" />
+    <Compile Include="Items\Block.cs" />
+    <Compile Include="Structure\BlockInstance.cs" />
+    <Compile Include="Support\IntPairVV.cs" />
+    <Compile Include="Rendering\Visibility.cs" />
+    <Compile Include="Data\ByteParser.cs" />
+    <Compile Include="Rendering\Camera.cs" />
+    <Compile Include="Structure\Chunk.cs" />
+    <Compile Include="Data\Constants.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GlWindow.cs" />
-    <Compile Include="IntPair.cs" />
-    <Compile Include="Item.cs" />
-    <Compile Include="ItemCategory.cs" />
+    <Compile Include="Support\IntPair.cs" />
+    <Compile Include="Items\Item.cs" />
+    <Compile Include="Items\ItemCategory.cs" />
     <Compile Include="ItemsSet.cs" />
-    <Compile Include="IVector.cs" />
-    <Compile Include="Loader.cs" />
-    <Compile Include="Material.cs" />
-    <Compile Include="Matrix.cs" />
-    <Compile Include="Plane.cs" />
-    <Compile Include="Polygon.cs" />
+    <Compile Include="Support\IVector.cs" />
+    <Compile Include="Data\Loader.cs" />
+    <Compile Include="Items\Material.cs" />
+    <Compile Include="Structure\Plane.cs" />
+    <Compile Include="Rendering\Polygon.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RenderChunk.cs" />
-    <Compile Include="RenderPiece.cs" />
-    <Compile Include="Texture.cs" />
-    <Compile Include="Tool.cs" />
-    <Compile Include="Triangle.cs" />
-    <Compile Include="Vector2D.cs" />
-    <Compile Include="Vector3D.cs" />
-    <Compile Include="World.cs" />
+    <Compile Include="Rendering\RenderChunk.cs" />
+    <Compile Include="Rendering\RenderPiece.cs" />
+    <Compile Include="Rendering\Texture.cs" />
+    <Compile Include="Items\Tool.cs" />
+    <Compile Include="Rendering\Triangle.cs" />
+    <Compile Include="Support\Vector2D.cs" />
+    <Compile Include="Support\Vector3D.cs" />
+    <Compile Include="Structure\World.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

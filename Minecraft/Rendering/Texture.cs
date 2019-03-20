@@ -9,8 +9,10 @@ using Tao;
 using Tao.OpenGl;
 using Tao.FreeGlut;
 using System.IO;
+using Minecraft.Support;
+using Minecraft.Data;
 
-namespace Minecraft {
+namespace Minecraft.Rendering {
 
     public class Texture {
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 
-namespace Minecraft {
+namespace Minecraft.Items {
 
     public class ItemCategory {
 

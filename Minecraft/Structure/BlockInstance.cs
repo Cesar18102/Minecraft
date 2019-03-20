@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tao.OpenGl;
+using Minecraft.Items;
 
-namespace Minecraft {
+namespace Minecraft.Structure {
 
     public class BlockInstance : Block {
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minecraft {
+namespace Minecraft.Support {
 
     public class Vector3D : IComparable, IVector {
 

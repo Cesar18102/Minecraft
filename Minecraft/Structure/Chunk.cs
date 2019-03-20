@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Minecraft.Rendering;
+using Minecraft.Data;
+using Minecraft.Items;
 
-namespace Minecraft {
+namespace Minecraft.Structure {
 
     public class Chunk {
 
@@ -14,6 +17,9 @@ namespace Minecraft {
 
         public Int64 PivotX { get; private set; }
         public Int64 PivotZ { get; private set; }
+
+        public Int64 RdX { get; private set; }
+        public Int64 RdZ { get; private set; }
 
         private BlockInstance[, ,] Blocks = new BlockInstance[Constants.CHUNK_X, 
                                                               Constants.CHUNK_Y, 
@@ -34,6 +40,9 @@ namespace Minecraft {
             this.PivotX = PivotX;
             this.PivotZ = PivotZ;
 
+            this.RdX = Math.Abs(PivotX / Constants.CHUNK_X);
+            this.RdZ = Math.Abs(PivotZ / Constants.CHUNK_Z);
+
             if (Generate)
                 GenerateChunk();
         }
@@ -47,15 +56,11 @@ namespace Minecraft {
                     for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
                         Blocks[i, k, j] = new BlockInstance(1, i, k, j);
 
-                int Count = Constants.R.Next(0, 10);
-
-                for (int q = 0; q < Count; q++)
-                    if(Constants.R.NextDouble() > 0.5)
-                        Blocks[0, k, Constants.R.Next(0, Constants.CHUNK_Z)] = null; 
-                    else
-                        Blocks[Constants.R.Next(0, Constants.CHUNK_Z), k, 0] = null; 
-                
-                Render[k] = new RenderChunk(this, k);
+                //Blocks[0, k, 0] = null;
+                Render[k] = new RenderChunk(this, k, (RdX < Constants.ShortRenderDistance && 
+                                                      RdZ < Constants.ShortRenderDistance) ? 
+                                                        true : 
+                                                        k >= Constants.DYRender * ((int)Math.Sqrt(RdX * RdX + RdZ + RdZ) - Constants.ShortRenderDistance));
             }
 
             /*for (Int16 i = (Int16)(Constants.CHUNK_Y - 1); i >= 0; i--) {
@@ -78,12 +83,12 @@ namespace Minecraft {
                 this.Render[i].LoadVisibility(
                     new RenderChunk[]{
 
-                        i == Constants.CHUNK_Y - 1 ? null : this.Render[i + 1],
-                        CLeft == null ? null : CLeft.Render[i], 
-                        CUp == null ? null : CUp.Render[i], 
-                        CRight == null ? null : CRight.Render[i], 
-                        CDown == null ? null : CDown.Render[i],
-                        i == 0 ? null : this.Render[i - 1]
+                        i == Constants.CHUNK_Y - 1 ? null : (this.Render[i + 1].Visible ? this.Render[i + 1] : null),
+                        CLeft == null ? null : (CLeft.Render[i].Visible ? CLeft.Render[i] : null), 
+                        CUp == null ? null : (CUp.Render[i].Visible ? CUp.Render[i] : null), 
+                        CRight == null ? null : (CRight.Render[i].Visible ? CRight.Render[i] : null), 
+                        CDown == null ? null : (CDown.Render[i].Visible ? CDown.Render[i] : null),
+                        i == 0 ? null : (this.Render[i - 1].Visible ? this.Render[i - 1] : null)
                     }
                 );
         }

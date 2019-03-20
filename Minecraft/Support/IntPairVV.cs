@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minecraft
-{
+namespace Minecraft.Support {
+
     public class IntPairVV : IntPair {
 
         public IntPairVV(int X, int Y) : base(X, Y) { }

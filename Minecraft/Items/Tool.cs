@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace Minecraft {
+namespace Minecraft.Items {
 
-    public class Material : Item {
+    public class Tool : Item {
 
-        public Material(string filename) {
+        public Tool(string filename) {
 
 
         }

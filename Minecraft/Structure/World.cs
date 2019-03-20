@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Minecraft.Support;
+using Minecraft.Data;
 
-namespace Minecraft {
+namespace Minecraft.Structure {
 
     public class World {
 

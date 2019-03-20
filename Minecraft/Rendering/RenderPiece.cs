@@ -5,8 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using Tao.OpenGl;
+using Minecraft.Structure;
+using Minecraft.Data;
+using Minecraft.Support;
+using Minecraft.Items;
 
-namespace Minecraft {
+namespace Minecraft.Rendering {
 
     public class RenderPiece {
 

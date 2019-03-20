@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Minecraft.Support;
 
-namespace Minecraft
-{
+namespace Minecraft.Rendering {
     public class Polygon {
 
         private List<Vector3D> V = new List<Vector3D>();

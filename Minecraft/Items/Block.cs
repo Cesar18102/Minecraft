@@ -7,8 +7,11 @@ using System.IO;
 using Tao;
 using Tao.OpenGl;
 using System.Drawing;
+using Minecraft.Support;
+using Minecraft.Data;
+using Minecraft.Structure;
 
-namespace Minecraft {
+namespace Minecraft.Items {
 
     public class Block : Item {
 

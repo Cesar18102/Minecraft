@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minecraft {
+namespace Minecraft.Data {
 
     public static class Constants {
 
@@ -22,7 +22,9 @@ namespace Minecraft {
         public static UInt16 CHUNK_Y = 64;
         public static UInt16 CHUNK_Z = 16;
 
-        public static UInt16 RenderDistance = 2;
+        public static UInt16 RenderDistance = 3;
+        public static UInt16 ShortRenderDistance = 2;
+        public static UInt16 DYRender = (UInt16)(CHUNK_Y / (RenderDistance - ShortRenderDistance));
 
         public static int[,] BlockIDs = new int[4, 2] {
 

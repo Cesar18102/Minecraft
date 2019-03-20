@@ -9,6 +9,10 @@ using Tao.OpenGl;
 using Tao.Platform;
 using System.Windows.Forms;
 using System.Drawing;
+using Minecraft.Rendering;
+using Minecraft.Structure;
+using Minecraft.Support;
+using Minecraft.Data;
 
 namespace Minecraft {
 

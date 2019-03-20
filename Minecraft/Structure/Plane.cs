@@ -7,8 +7,10 @@ using System.IO;
 using Tao.FreeGlut;
 using Tao.OpenGl;
 using Tao.Platform;
+using Minecraft.Data;
+using Minecraft.Rendering;
 
-namespace Minecraft {
+namespace Minecraft.Structure {
 
     public class Plane {
 

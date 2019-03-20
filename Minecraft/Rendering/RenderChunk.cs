@@ -5,13 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using Tao.OpenGl;
+using Minecraft.Structure;
+using Minecraft.Data;
+using Minecraft.Support;
 
-namespace Minecraft {
+namespace Minecraft.Rendering {
 
     public class RenderChunk {
 
         public BlockInstance[,] Layer = new BlockInstance[Constants.CHUNK_X, Constants.CHUNK_Z];
         private Visibility V = null;
+        public bool Visible = true;
+
         public delegate bool SearchPredicate(int x, int z);
 
         public bool[][,] Visited = new bool[3][,] {
@@ -37,10 +42,11 @@ namespace Minecraft {
 
         private delegate void Adder(int x, int z);
 
-        public RenderChunk(Chunk C, UInt16 H) {
+        public RenderChunk(Chunk C, UInt16 H, bool Visible) {
 
             this.PivotX = C.PivotX;
             this.PivotZ = C.PivotZ;
+            this.Visible = Visible;
             this.H = H;
             
             for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
@@ -109,14 +115,7 @@ namespace Minecraft {
 
                     RenderPiece RP = new RenderPiece(new double[] { R, G, B }, PivotX, PivotZ, H);
                     PlaneDrawSearch(I, X, Z, new Queue<IntPair>(), RP, SearchConditions[I]);
-
-                    //if(i == Constants.MODEL_SIDE.SIDE)
-                    //    for (int j = 0; j < RP.BlocksCount; j++)
-                    //        if (!V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.BACK] && !V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.FRONT] &&
-                    //            !V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.LEFT] && !V.V[RP[j].X, RP[j].Z][(int)Constants.Planes.RIGHT])
-                    //            RP.RemoveBlockAt(j);
-
-                   Pieces[I].Add(RP);
+                    Pieces[I].Add(RP);
                 }
 
                 foreach (RenderPiece P in Pieces[I])
@@ -165,6 +164,9 @@ namespace Minecraft {
         }
 
         public void Draw() {
+
+            if (!Visible)
+                return;
 
             for(int i = 0; i < 3; i++)
                 for (int j = 0; j < Pieces[i].Count; j++)
