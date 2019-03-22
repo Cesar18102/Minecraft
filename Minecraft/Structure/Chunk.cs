@@ -86,8 +86,17 @@ namespace Minecraft.Structure {
 
         private void Chunk_BlockDestroyed(int x, int z, int h) {
 
-            if (h != 0 && Render[h - 1][x, z] != null) Render[h - 1].V[x, z, Constants.Planes.TOP] = true;
-            if (h != Constants.CHUNK_Y - 1 && Render[Constants.CHUNK_Y - 1][x, z] != null) Render[h + 1].V[x, z, Constants.Planes.BOTTOM] = true;
+            if (h != 0 && Render[h - 1][x, z] != null) {
+
+                Render[h - 1].V[x, z, Constants.Planes.TOP] = true;
+                Render[h - 1].Rebuild();
+            }
+
+            if (h != Constants.CHUNK_Y - 1 && Render[h + 1][x, z] != null) {
+
+                Render[h + 1].V[x, z, Constants.Planes.BOTTOM] = true;
+                Render[h + 1].Rebuild();
+            }
 
             int L = Constants.BlockIDs.GetLength(0);
             for (int i = 0; i < L; i++) {
@@ -107,8 +116,7 @@ namespace Minecraft.Structure {
                     int NNX = Constants.LoopOverflow(NX, Constants.CHUNK_X);
                     int NNZ = Constants.LoopOverflow(NZ, Constants.CHUNK_Z);
 
-                    if (Neighbours[NID] != null && Neighbours[NID][h][NNX, NNZ] != null)
-                    {
+                    if (Neighbours[NID] != null && Neighbours[NID][h][NNX, NNZ] != null) {
 
                         Neighbours[NID].Render[h].V[NNX, NNZ, PID] = true;
                         Neighbours[NID].Render[h].Rebuild();

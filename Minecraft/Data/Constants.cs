@@ -153,5 +153,18 @@ namespace Minecraft.Data {
             {  0,  1  },
             { -1,  0  }
         };
+
+        public static System.Drawing.Color UiAimColor = System.Drawing.Color.FromArgb(0, 0, 0);
+
+        public static float DefaultPointSize = 1;
+        public static float UiPointSize = 5;
+
+        public static int UiAimDistanceDevider = 10;
+
+        public const double MinCameraAngle = -1.55f;
+        public const double MaxCameraAngle = 1.35;
+
+        public const double DefaultSpeed = 0.02;
+        public const double SprintMultiplier = 5;
     }
 }

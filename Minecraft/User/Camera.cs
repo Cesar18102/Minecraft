@@ -4,14 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Minecraft.Support;
+using Minecraft.Data;
 
-namespace Minecraft.Rendering {
+namespace Minecraft.User {
 
     public class Camera {
 
-        public Vector3D Eye { get; set; }
-        public Vector3D Target { get; set; }
-        public Vector3D Normal { get; set; }
+        public delegate void AnyMove(Vector3D Eye, Vector3D Target, Vector3D Normal);
+        public event AnyMove Rotation;
+        public event AnyMove Movement;
+
+        public Vector3D Eye { get; private set; }
+        public Vector3D Target { get; private set; }
+        public Vector3D Normal { get; private set; }
 
         public float AXZ { get; private set; }
         public float AZY { get; private set; }
@@ -25,9 +30,18 @@ namespace Minecraft.Rendering {
             this.Normal = new Vector3D(NormalX, NormalY, NormalZ);
         }
 
+        public void Move(float DX, float DY, float DZ) {
+
+            Eye = new Vector3D(Eye.DX + DX, Eye.DY + DY, Eye.DZ + DZ);
+            Target = new Vector3D(Target.DX + DX, Target.DY + DY, Target.DZ + DZ);
+
+            if (Movement != null)
+                Movement(Eye, Target, Normal);
+        }
+
         public void Rotate(float DAXZ, float DAY) {
 
-            if ((AZY + DAY) % (Math.PI * 2) < -1.55 || (AZY + DAY) % (Math.PI * 2) > 1.35)
+            if ((AZY + DAY) % (Math.PI * 2) < Constants.MinCameraAngle || (AZY + DAY) % (Math.PI * 2) > Constants.MaxCameraAngle)
                 return;
 
             AXZ = (float)((AXZ + DAXZ) % (Math.PI * 2));
@@ -43,6 +57,9 @@ namespace Minecraft.Rendering {
 
             this.Target = NewViewVectorNormilised.PointsTo(this.Eye);
             this.Normal = NewNormalVectorNormilised;
+
+            if (Rotation != null)
+                Rotation(Eye, Target, Normal);
         }
     }
 }

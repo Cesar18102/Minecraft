@@ -13,6 +13,7 @@ using Minecraft.Rendering;
 using Minecraft.Structure;
 using Minecraft.Support;
 using Minecraft.Data;
+using Minecraft.User;
 
 namespace Minecraft {
 
@@ -20,6 +21,7 @@ namespace Minecraft {
 
         public static GlWindow GLW;
         public static Camera CAM;
+        public static UI UserInterface;
         public static World W;
         private Vector2D Mouse = null;
 
@@ -33,6 +35,7 @@ namespace Minecraft {
         public void Start() {
 
             CAM = new Camera(0, 7, 0, 1, 6, 1, 0, 1, 0);
+            UserInterface = new UI(CAM);
 
             GLW = new GlWindow(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height,
                                0, 0, "Minecraft", 60, InitGraphics, Render, Reshape, KeyDown,
@@ -80,9 +83,10 @@ namespace Minecraft {
                     ItemsSet.TEXTURES[i].Upload();
             }
 
-            Gl.glClearColor(255, 255, 255, 0);
+            Gl.glClearColor(255, 255, 255, 255);
             Cursor.Hide();
             W.Draw();
+            UserInterface.Draw();
         }
 
         public void Reshape(int w, int h) {
@@ -101,7 +105,7 @@ namespace Minecraft {
             double DZ = OldZ - EyeZ;
             double L = Math.Sqrt(DX * DX + DZ * DZ);
 
-            double SPEED = 0.02 * (Glut.glutGetModifiers() == Glut.GLUT_ACTIVE_SHIFT ? 5 : 1);
+            double SPEED = Constants.DefaultSpeed * (Glut.glutGetModifiers() == Glut.GLUT_ACTIVE_SHIFT ? Constants.SprintMultiplier : 1);
             float DDX = (float)(SPEED * DX / L);
             float DDZ = (float)(SPEED * DZ / L);
 
@@ -131,9 +135,7 @@ namespace Minecraft {
                 case 212 :
                 case 244 :
 
-                    CAM.Eye = new Vector3D(CAM.Eye.DX - (float)DDXS[0], CAM.Eye.DY, CAM.Eye.DZ - (float)DDZS[0]);
-                    CAM.Target = new Vector3D(CAM.Target.DX - (float)DDXS[0], CAM.Target.DY, CAM.Target.DZ - (float)DDZS[0]);
-
+                    CAM.Move(-(float)DDXS[0], 0, -(float)DDZS[0]);
                     break;
 
                 //D
@@ -142,9 +144,7 @@ namespace Minecraft {
                 case 194 :
                 case 226 :
 
-                    CAM.Eye = new Vector3D(CAM.Eye.DX + (float)DDXS[0], CAM.Eye.DY, CAM.Eye.DZ + (float)DDZS[0]);
-                    CAM.Target = new Vector3D(CAM.Target.DX + (float)DDXS[0], CAM.Target.DY, CAM.Target.DZ + (float)DDZS[0]);
-
+                    CAM.Move((float)DDXS[0], 0, (float)DDZS[0]);
                     break;
 
                 //W
@@ -153,9 +153,7 @@ namespace Minecraft {
                 case 214 :
                 case 246 :
 
-                    CAM.Eye = new Vector3D(CAM.Eye.DX + DDX, CAM.Eye.DY, CAM.Eye.DZ + DDZ);
-                    CAM.Target = new Vector3D(CAM.Target.DX + DDX, CAM.Target.DY, CAM.Target.DZ + DDZ);
-
+                    CAM.Move(DDX, 0, DDZ);
                     break;
 
                 //S
@@ -164,25 +162,19 @@ namespace Minecraft {
                 case 219 :
                 case 251 :
 
-                    CAM.Eye = new Vector3D(CAM.Eye.DX - DDX, CAM.Eye.DY, CAM.Eye.DZ - DDZ);
-                    CAM.Target = new Vector3D(CAM.Target.DX - DDX, CAM.Target.DY, CAM.Target.DZ - DDZ);
-
+                    CAM.Move(-DDX, 0, -DDZ);
                     break;
 
                 // \s
                 case 32  :
 
-                    CAM.Eye = new Vector3D(CAM.Eye.DX, CAM.Eye.DY + 0.1f, CAM.Eye.DZ);
-                    CAM.Target = new Vector3D(CAM.Target.DX, CAM.Target.DY + 0.1f, CAM.Target.DZ);
-
+                    CAM.Move(0, 0.1f, 0);
                     break;
 
                 // X
                 case 120:
 
-                    CAM.Eye = new Vector3D(CAM.Eye.DX, CAM.Eye.DY - 0.1f, CAM.Eye.DZ);
-                    CAM.Target = new Vector3D(CAM.Target.DX, CAM.Target.DY - 0.1f, CAM.Target.DZ);
-
+                    CAM.Move(0, -0.1f, 0);
                     break;
 
                 case 67:
@@ -192,8 +184,8 @@ namespace Minecraft {
                     {
                         W[2, 2][h].DestroyBlock(0, 0);
                         W[2, 2][h].DestroyBlock(1, 0);
+                        W[2, 2][h].DestroyBlock(0, 1);
                         W[2, 2][h--].Rebuild();
-                        //W[2, 2][h--].DestroyBlock(0, 1);*/
                     }
                 break;
             }

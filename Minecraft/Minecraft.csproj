@@ -53,11 +53,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Items\Block.cs" />
+    <Compile Include="User\Player.cs" />
     <Compile Include="Structure\BlockInstance.cs" />
     <Compile Include="Support\IntPairVV.cs" />
     <Compile Include="Rendering\Visibility.cs" />
     <Compile Include="Data\ByteParser.cs" />
-    <Compile Include="Rendering\Camera.cs" />
+    <Compile Include="User\Camera.cs" />
     <Compile Include="Structure\Chunk.cs" />
     <Compile Include="Data\Constants.cs" />
     <Compile Include="Game.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Support\Vector2D.cs" />
     <Compile Include="Support\Vector3D.cs" />
     <Compile Include="Structure\World.cs" />
+    <Compile Include="User\UI.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

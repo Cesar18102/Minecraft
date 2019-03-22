@@ -8,6 +8,7 @@ using Tao.FreeGlut;
 using Tao.OpenGl;
 using Tao.Platform;
 using Minecraft.Rendering;
+using Minecraft.User;
 
 namespace Minecraft {
 
