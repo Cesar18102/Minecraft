@@ -7,6 +7,7 @@ using System.IO;
 using Minecraft.Rendering;
 using Minecraft.Data;
 using Minecraft.Items;
+using Minecraft.Support;
 
 namespace Minecraft.Structure {
 
@@ -167,6 +168,17 @@ namespace Minecraft.Structure {
         public void WriteFile(Stream S) {
 
             //saving
+        }
+
+        public BlockInstance GetBlockPointInside(Vector3D V) {
+
+            for (int i = 0; i < Constants.CHUNK_X; i++)
+                for (int j = 0; j < Constants.CHUNK_Y; j++)
+                    for (int k = 0; k < Constants.CHUNK_Z; k++)
+                        if (Blocks[i, j, k].IsPointInside(V))
+                            return Blocks[i, j, k];
+
+            return null;
         }
     }
 }

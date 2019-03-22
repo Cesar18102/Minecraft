@@ -162,9 +162,11 @@ namespace Minecraft.Data {
         public static int UiAimDistanceDevider = 10;
 
         public const double MinCameraAngle = -1.55f;
-        public const double MaxCameraAngle = 1.35;
+        public const double MaxCameraAngle = 1.55;
 
         public const double DefaultSpeed = 0.02;
         public const double SprintMultiplier = 5;
+
+        public const double FAULT = 0.01f;
     }
 }

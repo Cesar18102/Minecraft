@@ -19,9 +19,8 @@ namespace Minecraft {
 
     public class Game {
 
+        public static Player P = new Player();
         public static GlWindow GLW;
-        public static Camera CAM;
-        public static UI UserInterface;
         public static World W;
         private Vector2D Mouse = null;
 
@@ -34,12 +33,9 @@ namespace Minecraft {
 
         public void Start() {
 
-            CAM = new Camera(0, 7, 0, 1, 6, 1, 0, 1, 0);
-            UserInterface = new UI(CAM);
-
             GLW = new GlWindow(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height,
                                0, 0, "Minecraft", 60, InitGraphics, Render, Reshape, KeyDown,
-                               MouseClick, MouseMove, SpecialKeyDown, SpecialKeyUp, CAM);
+                               MouseClick, MouseMove, SpecialKeyDown, SpecialKeyUp, P.CAM);
 
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
             Mouse = new Vector2D(GLW.Width / 2, GLW.Height / 2);
@@ -83,10 +79,10 @@ namespace Minecraft {
                     ItemsSet.TEXTURES[i].Upload();
             }
 
-            Gl.glClearColor(255, 255, 255, 255);
+            Gl.glClearColor(255, 255, 255, 0);
             Cursor.Hide();
             W.Draw();
-            UserInterface.Draw();
+            P.UserInterface.Draw();
         }
 
         public void Reshape(int w, int h) {
@@ -95,11 +91,11 @@ namespace Minecraft {
 
         public void KeyDown(byte key, int x, int y) { // update pressed
 
-            double OldX = CAM.Target.DX;
-            double OldZ = CAM.Target.DZ;
+            double OldX = P.CAM.Target.DX;
+            double OldZ = P.CAM.Target.DZ;
 
-            double EyeX = CAM.Eye.DX;
-            double EyeZ = CAM.Eye.DZ;
+            double EyeX = P.CAM.Eye.DX;
+            double EyeZ = P.CAM.Eye.DZ;
 
             double DX = OldX - EyeX;
             double DZ = OldZ - EyeZ;
@@ -135,7 +131,7 @@ namespace Minecraft {
                 case 212 :
                 case 244 :
 
-                    CAM.Move(-(float)DDXS[0], 0, -(float)DDZS[0]);
+                    P.Move(-(float)DDXS[0], 0, -(float)DDZS[0]);
                     break;
 
                 //D
@@ -144,7 +140,7 @@ namespace Minecraft {
                 case 194 :
                 case 226 :
 
-                    CAM.Move((float)DDXS[0], 0, (float)DDZS[0]);
+                    P.Move((float)DDXS[0], 0, (float)DDZS[0]);
                     break;
 
                 //W
@@ -153,7 +149,7 @@ namespace Minecraft {
                 case 214 :
                 case 246 :
 
-                    CAM.Move(DDX, 0, DDZ);
+                    P.Move(DDX, 0, DDZ);
                     break;
 
                 //S
@@ -162,19 +158,19 @@ namespace Minecraft {
                 case 219 :
                 case 251 :
 
-                    CAM.Move(-DDX, 0, -DDZ);
+                    P.Move(-DDX, 0, -DDZ);
                     break;
 
                 // \s
                 case 32  :
 
-                    CAM.Move(0, 0.1f, 0);
+                    P.Move(0, 0.1f, 0);
                     break;
 
                 // X
                 case 120:
 
-                    CAM.Move(0, -0.1f, 0);
+                    P.Move(0, -0.1f, 0);
                     break;
 
                 case 67:
@@ -189,9 +185,34 @@ namespace Minecraft {
                     }
                 break;
             }
+
+            /*for (int i = 0; i < W.BufH; i++)
+            {
+
+                bool TargetBlockFound = false;
+                for (int j = 0; j < W.BufW; j++) {
+
+                    if (W[i, j] != null) {
+
+                        BlockInstance B = W[i, j].GetBlockPointInside(P.CAM.Target);
+
+                        if (B != null) {
+
+                            W[i, j][B.Y].DestroyBlock(B.X, B.Z);
+                            TargetBlockFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (TargetBlockFound)
+                    break;
+            }*/
+
         }
 
-        public void SpecialKeyDown(int key, int x, int y) {
+        public void SpecialKeyDown(int key, int x, int y)
+        {
 
         }
 
@@ -214,7 +235,7 @@ namespace Minecraft {
             float AXZ = (float)(Math.PI * -dX / GLW.Width);
             float AZY = (float)(Math.PI * dY / GLW.Height);
 
-            CAM.Rotate(AXZ, AZY);
+            P.CAM.Rotate(AXZ, AZY);
 
             Cursor.Position = new Point(GLW.Width / 2, GLW.Height / 2);
         }

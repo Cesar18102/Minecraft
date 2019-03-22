@@ -14,8 +14,8 @@ namespace Minecraft.Structure {
         private bool[,] ChunkDrawBuffer;
         private List<List<IntPair>> DrawSequence = new List<List<IntPair>>();
 
-        private int BufH = 0;
-        private int BufW = 0;
+        public int BufH { get; private set; }
+        public int BufW { get; private set; }
         private int Total = 0;
 
         public int RendDist { get; private set; }
@@ -29,7 +29,7 @@ namespace Minecraft.Structure {
 
         public Chunk this[int i, int j] {
 
-            get { return i >= 0 && i < RendDist && j >= 0 && j < RendDist ? ChunkBuffer[i, j] : null; }
+            get { return i >= 0 && i < BufW && j >= 0 && j < BufH ? ChunkBuffer[i, j] : null; }
         }
 
         public void ReserveNewChunck(ref UInt64 CID) {

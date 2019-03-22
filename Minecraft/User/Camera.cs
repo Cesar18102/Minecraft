@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Minecraft.Support;
 using Minecraft.Data;
+using Minecraft.Structure;
 
 namespace Minecraft.User {
 
