@@ -12,6 +12,7 @@ namespace Minecraft.User {
     public class UI {
 
         public Vector3D Aim { get; private set; }
+        public Vector3D Eye { get; private set; }
 
         public UI(Camera C) {
 
@@ -25,6 +26,8 @@ namespace Minecraft.User {
             Aim = new Vector3D(Eye.DX + (Target.DX - Eye.DX) / Constants.UiAimDistanceDevider,
                                Eye.DY + (Target.DY - Eye.DY) / Constants.UiAimDistanceDevider,
                                Eye.DZ + (Target.DZ - Eye.DZ) / Constants.UiAimDistanceDevider);
+
+            this.Eye = new Vector3D(Eye.DX, Eye.DY, Eye.DZ);
         }
 
         public void Draw() {

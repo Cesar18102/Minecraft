@@ -18,6 +18,7 @@ namespace Minecraft.User {
         public Vector3D Eye { get; private set; }
         public Vector3D Target { get; private set; }
         public Vector3D Normal { get; private set; }
+        public Ray SightRay { get; private set; }
 
         public float AXZ { get; private set; }
         public float AZY { get; private set; }
@@ -29,12 +30,14 @@ namespace Minecraft.User {
             this.Eye = new Vector3D(EyeX, EyeY, EyeZ);
             this.Target = new Vector3D(TargetX, TargetY, TargetZ);
             this.Normal = new Vector3D(NormalX, NormalY, NormalZ);
+            this.SightRay = new Ray(Eye, Target, 1); // MAGIC
         }
 
         public void Move(float DX, float DY, float DZ) {
 
             Eye = new Vector3D(Eye.DX + DX, Eye.DY + DY, Eye.DZ + DZ);
             Target = new Vector3D(Target.DX + DX, Target.DY + DY, Target.DZ + DZ);
+            SightRay = new Ray(Eye, Target, 1); // MAGIC
 
             if (Movement != null)
                 Movement(Eye, Target, Normal);
@@ -58,6 +61,8 @@ namespace Minecraft.User {
 
             this.Target = NewViewVectorNormilised.PointsTo(this.Eye);
             this.Normal = NewNormalVectorNormilised;
+
+            SightRay = new Ray(Eye, Target, 1); //MAGIC
 
             if (Rotation != null)
                 Rotation(Eye, Target, Normal);

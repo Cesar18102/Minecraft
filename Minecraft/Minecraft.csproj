@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Items\Block.cs" />
+    <Compile Include="Support\Ray.cs" />
     <Compile Include="User\Player.cs" />
     <Compile Include="Structure\BlockInstance.cs" />
     <Compile Include="Support\IntPairVV.cs" />

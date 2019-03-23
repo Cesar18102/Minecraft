@@ -74,7 +74,7 @@ namespace Minecraft.Rendering {
             if (B.Z > MaxZ) MaxZ = B.Z;
             if (B.Z < MinZ) MinZ = B.Z;
 
-            this.BlockSize = B.Size;
+            this.BlockSize = B.Size.CompareTo(this.BlockSize) == 1? B.Size : this.BlockSize;
             this.BlocksCount = Blocks.Count;
         }
 

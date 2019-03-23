@@ -67,6 +67,9 @@ namespace Minecraft.Support {
 
         public int CompareTo(object obj) {
 
+            if (obj == null)
+                return 1;
+
             Vector3D V = obj as Vector3D;
 
             return this.Length > V.Length ? 1 : (this.Length < V.Length ? -1 : 0);

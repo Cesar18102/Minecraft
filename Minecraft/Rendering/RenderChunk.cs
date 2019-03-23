@@ -73,6 +73,8 @@ namespace Minecraft.Rendering {
 
             if (this.BlockDestroyed != null)
                 BlockDestroyed(X, Z, H);
+
+            Rebuild();
         }
 
         public void LoadVisibility(RenderChunk[] RC) {

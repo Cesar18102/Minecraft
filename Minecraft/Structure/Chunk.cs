@@ -60,7 +60,7 @@ namespace Minecraft.Structure {
             for (UInt16 k = 0; k < Constants.CHUNK_Y; k++) {
                 for (UInt16 i = 0; i < Constants.CHUNK_X; i++)
                     for (UInt16 j = 0; j < Constants.CHUNK_Z; j++)
-                        Blocks[i, k, j] = new BlockInstance(1, i, k, j);
+                        Blocks[i, k, j] = new BlockInstance(1, i, k, j, PivotX, PivotZ);
 
                 //Blocks[0, k, 0] = null;
                 Render[k] = new RenderChunk(this, k, (RdX < Constants.ShortRenderDistance && 
@@ -86,6 +86,8 @@ namespace Minecraft.Structure {
         }
 
         private void Chunk_BlockDestroyed(int x, int z, int h) {
+
+            Blocks[x, h, z] = null;
 
             if (h != 0 && Render[h - 1][x, z] != null) {
 
@@ -170,15 +172,17 @@ namespace Minecraft.Structure {
             //saving
         }
 
-        public BlockInstance GetBlockPointInside(Vector3D V) {
+        public List<BlockInstance> GetBlocksPointInside(Ray R) {
+
+            List<BlockInstance> B = new List<BlockInstance>();
 
             for (int i = 0; i < Constants.CHUNK_X; i++)
-                for (int j = 0; j < Constants.CHUNK_Y; j++)
+                for (int j = Constants.CHUNK_Y - 1; j >= 0; j--)
                     for (int k = 0; k < Constants.CHUNK_Z; k++)
-                        if (Blocks[i, j, k].IsPointInside(V))
-                            return Blocks[i, j, k];
+                        if (Blocks[i, j, k] != null && R.IsIntersects(Blocks[i, j, k]))
+                            B.Add(Blocks[i, j, k]);
 
-            return null;
+            return B;
         }
     }
 }

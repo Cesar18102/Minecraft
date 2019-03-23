@@ -180,35 +180,11 @@ namespace Minecraft {
                     {
                         W[2, 2][h].DestroyBlock(0, 0);
                         W[2, 2][h].DestroyBlock(1, 0);
-                        W[2, 2][h].DestroyBlock(0, 1);
-                        W[2, 2][h--].Rebuild();
+                        W[2, 2][h--].DestroyBlock(0, 1);
+                        //W[2, 2][h--].Rebuild();
                     }
                 break;
             }
-
-            /*for (int i = 0; i < W.BufH; i++)
-            {
-
-                bool TargetBlockFound = false;
-                for (int j = 0; j < W.BufW; j++) {
-
-                    if (W[i, j] != null) {
-
-                        BlockInstance B = W[i, j].GetBlockPointInside(P.CAM.Target);
-
-                        if (B != null) {
-
-                            W[i, j][B.Y].DestroyBlock(B.X, B.Z);
-                            TargetBlockFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (TargetBlockFound)
-                    break;
-            }*/
-
         }
 
         public void SpecialKeyDown(int key, int x, int y)
@@ -222,7 +198,31 @@ namespace Minecraft {
 
         public void MouseClick(int button, int state, int x, int y) {
 
+            if (button != 0) // make async, apply only to chunks adjecent to player's one
+                return;
 
+            for (int i = 0; i < W.BufH; i++) {
+
+                bool TargetBlockFound = false;
+                for (int j = 0; j < W.BufW; j++) {
+
+                    if (W[i, j] != null) {
+
+                        List<BlockInstance> BL = W[i, j].GetBlocksPointInside(P.CAM.SightRay);
+                        BL.Sort((B1, B2) => new Vector3D(B1.Middle, P.CAM.Eye).CompareTo(new Vector3D(B2.Middle, P.CAM.Eye)));
+
+                        if (BL.Count > 0) {
+
+                            W[i, j][BL[0].Y].DestroyBlock(BL[0].X, BL[0].Z);
+                            TargetBlockFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (TargetBlockFound)
+                    break;
+            }
         }
 
         public void MouseMove(int x, int y) {
