@@ -14,7 +14,7 @@ using Minecraft.Data;
 
 namespace Minecraft.Rendering {
 
-    public class Texture {
+    public class Texture : IDisposable {
 
         public uint[] TEXTURES = new uint[1];
 
@@ -119,6 +119,12 @@ namespace Minecraft.Rendering {
         public void UnBind() {
 
             Gl.glBindTexture(Gl.GL_TEXTURE_2D, 0);
+        }
+
+        public void Dispose() {
+
+            B.Dispose();
+            BD = null;
         }
     }
 }

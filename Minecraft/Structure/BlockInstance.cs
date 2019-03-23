@@ -49,11 +49,15 @@ namespace Minecraft.Structure {
                 for (int j = 0; j < RelativePoints.Count; j++) {
 
                     Vector3D P = ModelPoints[RelativePoints[j]];
-                    AbsPoints.Add(new Vector3D(P.DX + (PivotX + X + 0.5f) * Size.DX, P.DY + (Y - 0.5f) * Size.DY, P.DZ + (PivotX + Z + 0.5f) * Size.DZ));
+                    Vector3D V = new Vector3D(P.DX + (PivotX + X + 0.5f) * Size.DX, P.DY + (Y - 0.5f) * Size.DY, P.DZ + (PivotZ + Z + 0.5f) * Size.DZ);
+
+                    if(!AbsPoints.Contains(V))
+                        AbsPoints.Add(V);
                 }
             }
 
-            AbsPoints.Sort();
+            AbsPoints.Sort((V1, V2) => (V1.DX >= V2.DX && V1.DY >= V2.DY && V1.DZ >= V2.DZ) ? 1 :
+                                      ((V1.DX <= V2.DX && V1.DY <= V2.DY && V1.DZ <= V2.DZ) ? -1 : 0));
 
             this.MinP = AbsPoints[0];
             this.MaxP = AbsPoints.Last();

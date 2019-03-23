@@ -72,15 +72,17 @@ namespace Minecraft {
 
         public void Render() {
 
-            lock (ItemsSet.TEXTURES) {
+            /*lock (ItemsSet.T_BUFFER) {
 
-                int L = ItemsSet.TEXTURES.Count;
+                int L = ItemsSet.T_BUFFER.Count;
                 for (int i = 0; i < L; i++)
-                    ItemsSet.TEXTURES[i].Upload();
-            }
+                    ItemsSet.TEXTURES[ItemsSet.T_BUFFER[i]].Upload();
+            }*/
 
             Gl.glClearColor(255, 255, 255, 0);
             Cursor.Hide();
+
+            ItemsSet.UploadTextures();
             W.Draw();
             P.UserInterface.Draw();
         }
@@ -201,28 +203,7 @@ namespace Minecraft {
             if (button != 0) // make async, apply only to chunks adjecent to player's one
                 return;
 
-            for (int i = 0; i < W.BufH; i++) {
-
-                bool TargetBlockFound = false;
-                for (int j = 0; j < W.BufW; j++) {
-
-                    if (W[i, j] != null) {
-
-                        List<BlockInstance> BL = W[i, j].GetBlocksPointInside(P.CAM.SightRay);
-                        BL.Sort((B1, B2) => new Vector3D(B1.Middle, P.CAM.Eye).CompareTo(new Vector3D(B2.Middle, P.CAM.Eye)));
-
-                        if (BL.Count > 0) {
-
-                            W[i, j][BL[0].Y].DestroyBlock(BL[0].X, BL[0].Z);
-                            TargetBlockFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (TargetBlockFound)
-                    break;
-            }
+            P.LeftMouseButtonClick(W);
         }
 
         public void MouseMove(int x, int y) {

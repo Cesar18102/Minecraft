@@ -44,7 +44,7 @@ namespace Minecraft.Rendering {
         private Constants.Planes PL = Constants.Planes.TOP;
         private Constants.MODEL_SIDE MS = Constants.MODEL_SIDE.TOP;
 
-        private int T = 0; 
+        public int T { get; private set; } 
         private Polygon POLY = null;
         private Visibility V = null;
 

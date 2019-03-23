@@ -57,8 +57,13 @@ namespace Minecraft.Rendering {
 
         public void Rebuild() {
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++) {
+
                 this.Pieces[i].Clear();
+
+                for (int j = 0; j < this.Pieces[i].Count; j++)
+                    ItemsSet.DestroyTexture(this.Pieces[i][j].T);
+            }
 
             GenerateRenderPieces();
             CreateTextures();
